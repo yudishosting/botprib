@@ -1,4 +1,5 @@
 var lyrics = [
+  { time: 0, text: "[Intro Instrumental]" },
   { time: 6, text: "Yang kau dengar dalam hati" },
   { time: 14, text: "Biarlah bergema kali ini" },
   { time: 23, text: "Jangan kau redam dan" },
