@@ -1,5 +1,5 @@
 var lyrics = [
-  { time: 1, text: "Yang kau dengar dalam hati" },
+  { time: 0.1, text: "Yang kau dengar dalam hati" },
   { time: 2, text: "Biarlah bergema kali ini" },
   { time: 3, text: "Jangan kau redam dan" },
   { time: 4, text: "Yang kau tempa sejauh ini" },
@@ -27,5 +27,5 @@ var lyrics = [
   { time: 26, text: "Berbagai cobaan dan hal yang buat kau ragu" },
   { time: 27, text: "Jadikan percikan 'tuk menerpa tekadmu" },
   { time: 28, text: "Jalan hidupmu hanya milikmu sendiri" },
-  { time: 29, text: "Rasakan nikmatnya hidupmu hari ini" }
+  { time: 3, text: "Rasakan nikmatnya hidupmu hari ini" }
 ];
