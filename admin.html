@@ -31,38 +31,38 @@
             <label for="songTitle" class="block text-sm font-medium text-gray-300 mb-2">
               Judul Lagu
             </label>
-            <input type="text" id="songTitle" name="songTitle" placeholder="Masukkan judul lagu" required>
+            <input type="text" id="songTitle" name="songTitle" placeholder="Masukkan judul lagu" required class="w-full px-4 py-2 bg-gray-800/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400">
           </div>
 
           <div>
             <label for="artistSelect" class="block text-sm font-medium text-gray-300 mb-2">
               Pilih Artis atau Tambah Baru
             </label>
-            <select id="artistSelect" name="artistSelect" required>
+            <select id="artistSelect" name="artistSelect" required class="w-full px-4 py-2 bg-gray-800/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400">
               <option value="">Pilih artis</option>
             </select>
-            <input type="text" id="newArtistName" name="newArtistName" placeholder="Masukkan nama artis baru" class="mt-2 hidden">
+            <input type="text" id="newArtistName" name="newArtistName" placeholder="Masukkan nama artis baru" class="mt-2 hidden w-full px-4 py-2 bg-gray-800/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400">
           </div>
 
           <div>
             <label for="audioFile" class="block text-sm font-medium text-gray-300 mb-2">
-              File Audio (MP3)
+              File Audio (MP3, Max 10MB)
             </label>
-            <input type="file" id="audioFile" name="audioFile" accept="audio/mpeg,audio/mp3" required>
+            <input type="file" id="audioFile" name="audioFile" accept="audio/mpeg,audio/mp3" required class="w-full text-gray-300">
           </div>
 
           <div>
             <label for="lyricFile" class="block text-sm font-medium text-gray-300 mb-2">
               File Lirik (JS, Opsional)
             </label>
-            <input type="file" id="lyricFile" name="lyricFile" accept=".js,text/javascript">
+            <input type="file" id="lyricFile" name="lyricFile" accept=".js,text/javascript" class="w-full text-gray-300">
           </div>
 
           <div>
             <label for="artistPhoto" class="block text-sm font-medium text-gray-300 mb-2">
-              Foto Artis (JPG/PNG, Opsional)
+              Foto Artis (JPG/PNG, Max 2MB, Opsional)
             </label>
-            <input type="file" id="artistPhoto" name="artistPhoto" accept="image/jpeg,image/png">
+            <input type="file" id="artistPhoto" name="artistPhoto" accept="image/jpeg,image/png" class="w-full text-gray-300">
           </div>
 
           <button type="submit" class="btn w-full flex items-center justify-center">
@@ -124,7 +124,7 @@
       notification.style.display = 'block';
       setTimeout(() => {
         notification.style.display = 'none';
-      }, 3000);
+      }, 5000);
     }
 
     // Load daftar artis ke dropdown
@@ -136,8 +136,16 @@
         return;
       }
 
-      const playlist = JSON.parse(localStorage.getItem('playlist')) || [];
-      const artists = [...new Set(playlist.map(song => song.artist).filter(artist => artist))];
+      let playlist;
+      try {
+        playlist = JSON.parse(localStorage.getItem('playlist')) || [];
+      } catch (e) {
+        console.error('Gagal parse playlist dari localStorage:', e);
+        playlist = [];
+        localStorage.setItem('playlist', JSON.stringify(playlist));
+      }
+
+      const artists = [...new Set(playlist.map(song => song.artist).filter(artist => artist && typeof artist === 'string'))];
       
       artistSelect.innerHTML = '<option value="">Pilih artis</option>';
       artists.forEach(artist => {
@@ -176,9 +184,9 @@
     function validateLyricFile(content) {
       try {
         const cleanedContent = content.replace(/window\.lyrics\s*=\s*/, '');
-        const lyrics = JSON.parse(cleanedContent.match(/\[.*\]/s)[0]);
+        const lyrics = JSON.parse(cleanedContent.match(/\[.*\]/s)?.[0] || '[]');
         return Array.isArray(lyrics) && lyrics.every(line => 
-          typeof line === 'object' && 
+          line && typeof line === 'object' && 
           typeof line.time === 'number' && 
           typeof line.text === 'string'
         );
@@ -186,6 +194,16 @@
         console.error('Gagal memvalidasi file lirik:', e);
         return false;
       }
+    }
+
+    // Validasi ukuran file
+    function validateFileSize(file, maxSizeMB, fileType) {
+      const maxSizeBytes = maxSizeMB * 1024 * 1024;
+      if (file.size > maxSizeBytes) {
+        showNotification(`${fileType} melebihi ukuran maksimum ${maxSizeMB}MB!`, 'error');
+        return false;
+      }
+      return true;
     }
 
     // Fungsi untuk mengunggah dan menyimpan data
@@ -216,12 +234,21 @@
         showNotification('File audio harus berformat MP3!', 'error');
         return;
       }
+      if (!validateFileSize(audioFile, 10, 'File audio')) {
+        return;
+      }
       if (artistPhoto && !['image/jpeg', 'image/png'].includes(artistPhoto.type)) {
         showNotification('Foto artis harus berformat JPG atau PNG!', 'error');
         return;
       }
+      if (artistPhoto && !validateFileSize(artistPhoto, 2, 'Foto artis')) {
+        return;
+      }
       if (lyricFile && !['application/javascript', 'text/javascript'].includes(lyricFile.type)) {
         showNotification('File lirik harus berformat JS!', 'error');
+        return;
+      }
+      if (lyricFile && !validateFileSize(lyricFile, 1, 'File lirik')) {
         return;
       }
 
@@ -260,30 +287,43 @@
 
         // Proses semua file
         Promise.all([processLyric, processPhoto]).then(([lyricData, photoData]) => {
-          let playlist = JSON.parse(localStorage.getItem('playlist')) || [];
-          
-          // Jika artis baru, gunakan foto baru (jika ada) atau kosongkan
-          const existingArtist = playlist.find(song => song.artist === artistName);
-          const artistPhotoData = artistSelect === 'new' ? photoData : (existingArtist ? existingArtist.artistPhoto : photoData);
+          let playlist;
+          try {
+            playlist = JSON.parse(localStorage.getItem('playlist')) || [];
+          } catch (e) {
+            console.error('Gagal parse playlist dari localStorage:', e);
+            playlist = [];
+          }
+
+          // Validasi ukuran localStorage
+          const newSong = {
+            artist: artistName,
+            title: songTitle,
+            mp3: audioData,
+            lyric: lyricData,
+            artistPhoto: artistSelect === 'new' ? photoData : (playlist.find(song => song.artist === artistName)?.artistPhoto || photoData)
+          };
+
+          const currentStorageSize = new Blob([JSON.stringify([...playlist, newSong])]).size;
+          const maxStorageSize = 5 * 1024 * 1024; // 5MB (batas umum localStorage)
+          if (currentStorageSize > maxStorageSize) {
+            showNotification('Penyimpanan penuh! Hapus beberapa lagu atau kurangi ukuran file.', 'error');
+            return;
+          }
 
           // Tambah lagu baru ke playlist
-          playlist = [
-            ...playlist,
-            {
-              artist: artistName,
-              title: songTitle,
-              mp3: audioData,
-              lyric: lyricData,
-              artistPhoto: artistPhotoData
-            }
-          ];
-          localStorage.setItem('playlist', JSON.stringify(playlist));
-          console.log('Playlist setelah upload:', playlist);
-
-          showNotification('Lagu berhasil diunggah!', 'success');
-          document.getElementById('uploadForm').reset();
-          toggleNewArtistInput();
-          loadArtists();
+          playlist.push(newSong);
+          try {
+            localStorage.setItem('playlist', JSON.stringify(playlist));
+            console.log('Playlist setelah upload:', playlist);
+            showNotification('Lagu berhasil diunggah!', 'success');
+            document.getElementById('uploadForm').reset();
+            toggleNewArtistInput();
+            loadArtists();
+          } catch (e) {
+            console.error('Gagal menyimpan playlist ke localStorage:', e);
+            showNotification('Gagal menyimpan lagu! Coba lagi atau periksa penyimpanan browser.', 'error');
+          }
         }).catch(error => {
           console.error('Error saat upload:', error);
           showNotification(error, 'error');
@@ -305,18 +345,17 @@
 
       // Debug: Cek isi localStorage dan input file
       console.log('Isi localStorage playlist:', JSON.parse(localStorage.getItem('playlist')));
-
       const audioInput = document.getElementById('audioFile');
       audioInput.addEventListener('change', (e) => {
-        console.log('File audio dipilih:', e.target.files);
+        console.log('File audio dipilih:', e.target.files[0]?.name, e.target.files[0]?.size, 'bytes');
       });
       const lyricInput = document.getElementById('lyricFile');
       lyricInput.addEventListener('change', (e) => {
-        console.log('File lirik dipilih:', e.target.files);
+        console.log('File lirik dipilih:', e.target.files[0]?.name, e.target.files[0]?.size, 'bytes');
       });
       const photoInput = document.getElementById('artistPhoto');
       photoInput.addEventListener('change', (e) => {
-        console.log('Foto artis dipilih:', e.target.files);
+        console.log('Foto artis dipilih:', e.target.files[0]?.name, e.target.files[0]?.size, 'bytes');
       });
     });
   </script>

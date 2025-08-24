@@ -338,7 +338,7 @@
         }
         artistsData[song.artist].songCount++;
       });
-      return Object.values(artistsData);
+      return Object.values(artistsData).filter(artist => artist.name);
     }
 
     function loadArtists() {
@@ -812,10 +812,11 @@
     });
 
     // Inisialisasi
-    initParticles();
-    loadArtists();
     document.addEventListener('DOMContentLoaded', () => {
+      initParticles();
+      loadArtists();
       updateVisitorCount();
+      console.log('Halaman dimuat, playlist:', playlist);
     });
   </script>
 </body>
