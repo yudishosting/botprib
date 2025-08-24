@@ -25,6 +25,7 @@
   ],
   "rewrites": [
     {
+     "source": "/api/upload", "destination": "/api/upload.js",
       "source": "/admin",
       "destination": "/admin.html"
     },
@@ -35,4 +36,12 @@
   ],
   "cleanUrls": true,
   "trailingSlash": false
+}
+
+
+
+{
+  "rewrites": [
+    { "source": "/api/upload", "destination": "/api/upload.js" }
+  ]
 }

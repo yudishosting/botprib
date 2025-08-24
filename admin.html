@@ -206,7 +206,15 @@
       return true;
     }
 
-    // Fungsi untuk mengunggah dan menyimpan data
+    // Sanitasi nama file
+    function sanitizeFileName(name) {
+      return name
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+        .replace(/\s+/g, '');
+    }
+
+    // Fungsi untuk mengunggah dan menyimpan metadata
     function handleUpload(event) {
       event.preventDefault();
 
@@ -254,64 +262,82 @@
 
       // Tentukan nama artis
       const artistName = artistSelect === 'new' ? newArtistName : artistSelect;
+      const sanitizedArtist = sanitizeFileName(artistName);
+      const sanitizedTitle = sanitizeFileName(songTitle);
 
-      // Baca file audio
-      const audioReader = new FileReader();
-      audioReader.onload = function(e) {
-        const audioData = e.target.result;
+      // Simulasi path file
+      const audioPath = `music/${sanitizedArtist}/${sanitizedTitle}.mp3`;
+      const lyricPath = lyricFile ? `lyrics/${sanitizedArtist}/${sanitizedTitle}.js` : '';
+      const photoPath = artistPhoto ? `images/${sanitizedArtist}/${sanitizedArtist}.jpg` : '';
 
-        // Baca file lirik (jika ada)
-        const processLyric = lyricFile ? new Promise((resolve, reject) => {
-          const lyricReader = new FileReader();
-          lyricReader.onload = function(e) {
-            const lyricContent = e.target.result;
-            if (validateLyricFile(lyricContent)) {
-              resolve(lyricContent);
-            } else {
-              reject('Format lirik tidak valid! Pastikan format: window.lyrics = [{ time: number, text: string }, ...]');
-            }
-          };
-          lyricReader.onerror = () => reject('Gagal membaca file lirik!');
-          lyricReader.readAsText(lyricFile);
-        }) : Promise.resolve('');
-
-        // Baca foto artis (jika ada)
-        const processPhoto = artistPhoto ? new Promise((resolve, reject) => {
-          const photoReader = new FileReader();
-          photoReader.onload = function(e) {
-            resolve(e.target.result);
-          };
-          photoReader.onerror = () => reject('Gagal membaca foto artis!');
-          photoReader.readAsDataURL(artistPhoto);
-        }) : Promise.resolve('');
-
-        // Proses semua file
-        Promise.all([processLyric, processPhoto]).then(([lyricData, photoData]) => {
-          let playlist;
-          try {
-            playlist = JSON.parse(localStorage.getItem('playlist')) || [];
-          } catch (e) {
-            console.error('Gagal parse playlist dari localStorage:', e);
-            playlist = [];
+      // Baca file lirik (jika ada)
+      const processLyric = lyricFile ? new Promise((resolve, reject) => {
+        const lyricReader = new FileReader();
+        lyricReader.onload = function(e) {
+          const lyricContent = e.target.result;
+          if (validateLyricFile(lyricContent)) {
+            resolve(lyricPath);
+          } else {
+            reject('Format lirik tidak valid! Pastikan format: window.lyrics = [{ time: number, text: string }, ...]');
           }
+        };
+        lyricReader.onerror = () => reject('Gagal membaca file lirik!');
+        lyricReader.readAsText(lyricFile);
+      }) : Promise.resolve(lyricPath);
 
-          // Validasi ukuran localStorage
-          const newSong = {
-            artist: artistName,
-            title: songTitle,
-            mp3: audioData,
-            lyric: lyricData,
-            artistPhoto: artistSelect === 'new' ? photoData : (playlist.find(song => song.artist === artistName)?.artistPhoto || photoData)
-          };
+      // Baca foto artis (jika ada)
+      const processPhoto = artistPhoto ? new Promise((resolve, reject) => {
+        const photoReader = new FileReader();
+        photoReader.onload = function(e) {
+          resolve(photoPath);
+        };
+        photoReader.onerror = () => reject('Gagal membaca foto artis!');
+        photoReader.readAsDataURL(artistPhoto);
+      }) : Promise.resolve(photoPath);
 
-          const currentStorageSize = new Blob([JSON.stringify([...playlist, newSong])]).size;
-          const maxStorageSize = 5 * 1024 * 1024; // 5MB (batas umum localStorage)
-          if (currentStorageSize > maxStorageSize) {
-            showNotification('Penyimpanan penuh! Hapus beberapa lagu atau kurangi ukuran file.', 'error');
-            return;
+      // Proses upload ke server (simulasi)
+      Promise.all([processLyric, processPhoto]).then(([lyricPath, photoPath]) => {
+        let playlist;
+        try {
+          playlist = JSON.parse(localStorage.getItem('playlist')) || [];
+        } catch (e) {
+          console.error('Gagal parse playlist dari localStorage:', e);
+          playlist = [];
+        }
+
+        // Tambah metadata lagu baru
+        const newSong = {
+          artist: artistName,
+          title: songTitle,
+          mp3: audioPath,
+          lyric: lyricPath,
+          artistPhoto: photoPath || playlist.find(song => song.artist === artistName)?.artistPhoto || ''
+        };
+
+        // Validasi ukuran localStorage
+        const currentStorageSize = new Blob([JSON.stringify([...playlist, newSong])]).size;
+        const maxStorageSize = 5 * 1024 * 1024; // 5MB
+        if (currentStorageSize > maxStorageSize) {
+          showNotification('Penyimpanan metadata penuh! Hapus beberapa lagu.', 'error');
+          return;
+        }
+
+        // Simulasi upload file ke folder (di Vercel harus pakai serverless function)
+        const formData = new FormData();
+        formData.append('audio', audioFile, `${sanitizedTitle}.mp3`);
+        if (lyricFile) formData.append('lyric', lyricFile, `${sanitizedTitle}.js`);
+        if (artistPhoto) formData.append('photo', artistPhoto, `${sanitizedArtist}.jpg`);
+
+        fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        }).then(response => {
+          if (!response.ok) {
+            throw new Error('Gagal mengunggah file ke server!');
           }
-
-          // Tambah lagu baru ke playlist
+          return response.json();
+        }).then(() => {
+          // Tambah ke playlist dan simpan ke localStorage
           playlist.push(newSong);
           try {
             localStorage.setItem('playlist', JSON.stringify(playlist));
@@ -322,18 +348,16 @@
             loadArtists();
           } catch (e) {
             console.error('Gagal menyimpan playlist ke localStorage:', e);
-            showNotification('Gagal menyimpan lagu! Coba lagi atau periksa penyimpanan browser.', 'error');
+            showNotification('Gagal menyimpan metadata lagu!', 'error');
           }
         }).catch(error => {
           console.error('Error saat upload:', error);
-          showNotification(error, 'error');
+          showNotification(error.message, 'error');
         });
-      };
-      audioReader.onerror = function() {
-        console.error('Gagal membaca file audio!');
-        showNotification('Gagal membaca file audio!', 'error');
-      };
-      audioReader.readAsDataURL(audioFile);
+      }).catch(error => {
+        console.error('Error saat upload:', error);
+        showNotification(error, 'error');
+      });
     }
 
     // Inisialisasi
