@@ -123,99 +123,108 @@
 
   <script>
     // Data Playlist (Disimpan di localStorage)
-    let playlist = JSON.parse(localStorage.getItem('playlist')) || [
-      {
-        artist: "Hindia",
-        title: "Everything U Are",
-        mp3: "music/hindia/everything.mp3",
-        lyric: "lyrics/hindia/everything.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
-      },
-      {
-        artist: "Hindia",
-        title: "Ramai Sepi Bersama",
-        mp3: "music/hindia/bersama.mp3",
-        lyric: "lyrics/hindia/bersama.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
-      },
-      {
-        artist: "Hindia",
-        title: "Semua Lagu Cinta Terdengar Sama",
-        mp3: "music/hindia/sama.mp3",
-        lyric: "lyrics/hindia/sama.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
-      },
-      {
-        artist: "Hindia",
-        title: "Rumah ke rumah",
-        mp3: "music/hindia/rumah.mp3",
-        lyric: "lyrics/hindia/rumah.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
-      },
-      {
-        artist: "Hindia",
-        title: "Evaluasi",
-        mp3: "music/hindia/evaluasi.mp3",
-        lyric: "lyrics/hindia/evaluasi.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
-      },
-      {
-        artist: "Hindia",
-        title: "Cincin",
-        mp3: "music/hindia/cincin.mp3",
-        lyric: "lyrics/hindia/cincin.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
-      },
-      {
-        artist: "Hindia",
-        title: "Kita Kesana",
-        mp3: "music/hindia/kitakesana.mp3",
-        lyric: "lyrics/hindia/kitakesana.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
-      },
-      {
-        artist: "Hindia",
-        title: "Rasakan Nikmatnya Hidup",
-        mp3: "music/hindia/nikmatnya.mp3",
-        lyric: "lyrics/hindia/nikmatnya.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
-      },
-      {
-        artist: "Feast",
-        title: "Feast",
-        mp3: "music/nina/feast.mp3",
-        lyric: "lyrics/nina/feast.js",
-        artistPhoto: "/images/nina/nina.jpg"
-      },
-      {
-        artist: "Feast",
-        title: "Tarot",
-        mp3: "music/nina/tarot.mp3",
-        lyric: "lyrics/nina/tarot.js",
-        artistPhoto: "/images/nina/nina.jpg"
-      },
-      {
-        artist: "Feast",
-        title: "o,Tuan",
-        mp3: "music/nina/otuan.mp3",
-        lyric: "lyrics/nina/otuan.js",
-        artistPhoto: "/images/nina/nina.jpg"
-      },
-      {
-        artist: "Nadhif Basalamah",
-        title: "Bergema Sampai Selamanya",
-        mp3: "music/nadifbasalamah/bergema.mp3",
-        lyric: "lyrics/nadifbasalamah/bergema.js",
-        artistPhoto: "/images/nadifbasalamah/nadifbasalamah.jpg"
-      },
-      {
-        artist: "Nadhif Basalamah",
-        title: "Penjaga Hati",
-        mp3: "music/nadifbasalamah/penjagahati.mp3",
-        lyric: "lyrics/nadifbasalamah/penjagahati.js",
-        artistPhoto: "/images/nadifbasalamah/nadifbasalamah.jpg"
-      }
-    ];
+    let playlist = JSON.parse(localStorage.getItem('playlist')) || [];
+
+    // Inisialisasi playlist default hanya jika localStorage kosong
+    if (playlist.length === 0) {
+      playlist = [
+        {
+          artist: "Hindia",
+          title: "Everything U Are",
+          mp3: "music/hindia/everything.mp3",
+          lyric: "lyrics/hindia/everything.js",
+          artistPhoto: "/images/hindia/hindia.jpg"
+        },
+        {
+          artist: "Hindia",
+          title: "Ramai Sepi Bersama",
+          mp3: "music/hindia/bersama.mp3",
+          lyric: "lyrics/hindia/bersama.js",
+          artistPhoto: "/images/hindia/hindia.jpg"
+        },
+        {
+          artist: "Hindia",
+          title: "Semua Lagu Cinta Terdengar Sama",
+          mp3: "music/hindia/sama.mp3",
+          lyric: "lyrics/hindia/sama.js",
+          artistPhoto: "/images/hindia/hindia.jpg"
+        },
+        {
+          artist: "Hindia",
+          title: "Rumah ke rumah",
+          mp3: "music/hindia/rumah.mp3",
+          lyric: "lyrics/hindia/rumah.js",
+          artistPhoto: "/images/hindia/hindia.jpg"
+        },
+        {
+          artist: "Hindia",
+          title: "Evaluasi",
+          mp3: "music/hindia/evaluasi.mp3",
+          lyric: "lyrics/hindia/evaluasi.js",
+          artistPhoto: "/images/hindia/hindia.jpg"
+        },
+        {
+          artist: "Hindia",
+          title: "Cincin",
+          mp3: "music/hindia/cincin.mp3",
+          lyric: "lyrics/hindia/cincin.js",
+          artistPhoto: "/images/hindia/hindia.jpg"
+        },
+        {
+          artist: "Hindia",
+          title: "Kita Kesana",
+          mp3: "music/hindia/kitakesana.mp3",
+          lyric: "lyrics/hindia/kitakesana.js",
+          artistPhoto: "/images/hindia/hindia.jpg"
+        },
+        {
+          artist: "Hindia",
+          title: "Rasakan Nikmatnya Hidup",
+          mp3: "music/hindia/nikmatnya.mp3",
+          lyric: "lyrics/hindia/nikmatnya.js",
+          artistPhoto: "/images/hindia/hindia.jpg"
+        },
+        {
+          artist: "Feast",
+          title: "Feast",
+          mp3: "music/nina/feast.mp3",
+          lyric: "lyrics/nina/feast.js",
+          artistPhoto: "/images/nina/nina.jpg"
+        },
+        {
+          artist: "Feast",
+          title: "Tarot",
+          mp3: "music/nina/tarot.mp3",
+          lyric: "lyrics/nina/tarot.js",
+          artistPhoto: "/images/nina/nina.jpg"
+        },
+        {
+          artist: "Feast",
+          title: "o,Tuan",
+          mp3: "music/nina/otuan.mp3",
+          lyric: "lyrics/nina/otuan.js",
+          artistPhoto: "/images/nina/nina.jpg"
+        },
+        {
+          artist: "Nadhif Basalamah",
+          title: "Bergema Sampai Selamanya",
+          mp3: "music/nadifbasalamah/bergema.mp3",
+          lyric: "lyrics/nadifbasalamah/bergema.js",
+          artistPhoto: "/images/nadifbasalamah/nadifbasalamah.jpg"
+        },
+        {
+          artist: "Nadhif Basalamah",
+          title: "Penjaga Hati",
+          mp3: "music/nadifbasalamah/penjagahati.mp3",
+          lyric: "lyrics/nadifbasalamah/penjagahati.js",
+          artistPhoto: "/images/nadifbasalamah/nadifbasalamah.jpg"
+        }
+      ];
+      localStorage.setItem('playlist', JSON.stringify(playlist));
+    }
+
+    // Debug: Cek isi playlist
+    console.log('Playlist dimuat:', playlist);
 
     // DOM Elements
     const artistList = document.getElementById('artistList');
