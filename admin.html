@@ -38,7 +38,7 @@
             <label for="artistSelect" class="block text-sm font-medium text-gray-300 mb-2">
               Pilih Artis atau Tambah Baru
             </label>
-            <select id="artistSelect" name="artistSelect">
+            <select id="artistSelect" name="artistSelect" required>
               <option value="">Pilih artis</option>
               <!-- Daftar artis akan diisi oleh JavaScript -->
             </select>
@@ -49,14 +49,14 @@
             <label for="audioFile" class="block text-sm font-medium text-gray-300 mb-2">
               File Audio (MP3)
             </label>
-            <input type="file" id="audioFile" name="audioFile" accept="audio/mp3" required>
+            <input type="file" id="audioFile" name="audioFile" accept="audio/mpeg,audio/mp3" required>
           </div>
 
           <div>
             <label for="lyricFile" class="block text-sm font-medium text-gray-300 mb-2">
               File Lirik (JS, Opsional)
             </label>
-            <input type="file" id="lyricFile" name="lyricFile" accept=".js">
+            <input type="file" id="lyricFile" name="lyricFile" accept=".js,text/javascript">
           </div>
 
           <div>
@@ -131,6 +131,12 @@
     // Load daftar artis ke dropdown
     function loadArtists() {
       const artistSelect = document.getElementById('artistSelect');
+      if (!artistSelect) {
+        console.error('Elemen artistSelect tidak ditemukan!');
+        showNotification('Gagal memuat daftar artis!', 'error');
+        return;
+      }
+
       const playlist = JSON.parse(localStorage.getItem('playlist')) || [];
       const artists = [...new Set(playlist.map(song => song.artist))];
       
@@ -146,6 +152,8 @@
       addNewOption.value = "new";
       addNewOption.textContent = "Tambah Artis Baru";
       artistSelect.appendChild(addNewOption);
+
+      console.log('Daftar artis dimuat:', artists);
     }
 
     // Toggle input artis baru
@@ -165,14 +173,16 @@
     // Validasi file lirik
     function validateLyricFile(content) {
       try {
-        const lyrics = eval(content); // Hati-hati: eval berbahaya, hanya untuk demo
-        if (!Array.isArray(lyrics)) return false;
-        return lyrics.every(line => 
+        // Hapus `window.lyrics =` dan ambil array-nya
+        const cleanedContent = content.replace(/window\.lyrics\s*=\s*/, '');
+        const lyrics = JSON.parse(cleanedContent.match(/\[.*\]/s)[0]);
+        return Array.isArray(lyrics) && lyrics.every(line => 
           typeof line === 'object' && 
           typeof line.time === 'number' && 
           typeof line.text === 'string'
         );
       } catch (e) {
+        console.error('Gagal memvalidasi file lirik:', e);
         return false;
       }
     }
@@ -209,7 +219,7 @@
         showNotification('Foto artis harus berformat JPG atau PNG!', 'error');
         return;
       }
-      if (lyricFile && lyricFile.type !== 'application/javascript' && lyricFile.type !== 'text/javascript') {
+      if (lyricFile && !['application/javascript', 'text/javascript'].includes(lyricFile.type)) {
         showNotification('File lirik harus berformat JS!', 'error');
         return;
       }
@@ -230,7 +240,7 @@
             if (validateLyricFile(lyricContent)) {
               resolve(lyricContent);
             } else {
-              reject('Format lirik tidak valid!');
+              reject('Format lirik tidak valid! Pastikan format: window.lyrics = [{ time: number, text: string }, ...]');
             }
           };
           lyricReader.onerror = () => reject('Gagal membaca file lirik!');
@@ -269,20 +279,38 @@
           toggleNewArtistInput();
           loadArtists();
         }).catch(error => {
+          console.error('Error saat upload:', error);
           showNotification(error, 'error');
         });
       };
       audioReader.onerror = function() {
+        console.error('Gagal membaca file audio!');
         showNotification('Gagal membaca file audio!', 'error');
       };
       audioReader.readAsDataURL(audioFile);
     }
 
     // Inisialisasi
-    initParticles();
-    loadArtists();
-    document.getElementById('artistSelect').addEventListener('change', toggleNewArtistInput);
-    document.getElementById('uploadForm').addEventListener('submit', handleUpload);
+    document.addEventListener('DOMContentLoaded', () => {
+      initParticles();
+      loadArtists();
+      document.getElementById('artistSelect').addEventListener('change', toggleNewArtistInput);
+      document.getElementById('uploadForm').addEventListener('submit', handleUpload);
+
+      // Debug: Cek apakah input file terdeteksi
+      const audioInput = document.getElementById('audioFile');
+      audioInput.addEventListener('change', (e) => {
+        console.log('File audio dipilih:', e.target.files);
+      });
+      const lyricInput = document.getElementById('lyricFile');
+      lyricInput.addEventListener('change', (e) => {
+        console.log('File lirik dipilih:', e.target.files);
+      });
+      const photoInput = document.getElementById('artistPhoto');
+      photoInput.addEventListener('change', (e) => {
+        console.log('Foto artis dipilih:', e.target.files);
+      });
+    });
   </script>
 </body>
 </html>
