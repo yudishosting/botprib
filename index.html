@@ -7,366 +7,39 @@
   <title>Playlist Musik Favorit</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap');
-
-    /* Reset dan Base Styles */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-    }
-
-    body {
-      background: linear-gradient(135deg, #1e1e4a 0%, #2d2d7a 100%);
-      min-height: 100vh;
-      color: #ffffff;
-      overflow-x: hidden;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* Glassmorphism Effect */
-    .glass-effect {
-      background: rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-      border-radius: 16px;
-    }
-
-    /* Card Styles */
-    .card {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      transform-style: preserve-3d;
-      position: relative;
-      z-index: 2;
-      transform: translateZ(0);
-    }
-    
-    .card:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateY(-8px) rotateX(6deg) rotateY(4deg);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    }
-    
-    .card > * {
-      transform: translateZ(10px);
-    }
-
-    /* Floating Artist Card */
-    .artist-card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-      border: none;
-      border-radius: 20px;
-      padding: 1.5rem;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 0 20px rgba(250, 204, 21, 0.2);
-      animation: floatArtist 5s ease-in-out infinite;
-      transform-style: preserve-3d;
-      transform: translateZ(20px);
-      position: relative;
-      overflow: visible;
-    }
-
-    .artist-card:hover {
-      transform: translateY(-12px) translateZ(30px) rotateX(8deg) rotateY(6deg);
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(250, 204, 21, 0.4);
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
-    }
-
-    @keyframes floatArtist {
-      0%, 100% { transform: translateY(0) translateZ(20px) rotateX(2deg) rotateY(2deg); }
-      50% { transform: translateY(-25px) translateZ(30px) rotateX(-2deg) rotateY(-2deg); }
-    }
-
-    /* Artist Image */
-    .artist-card img, .artist-card .no-image {
-      transition: transform 0.3s ease;
-      transform: translateZ(15px);
-    }
-
-    .artist-card:hover img, .artist-card:hover .no-image {
-      transform: translateZ(25px) scale(1.1);
-    }
-
-    /* Animasi */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .fade-in {
-      animation: fadeIn 0.6s ease-out forwards;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    /* Efek Parallax Mouse */
-    #mainContent {
-      transform-style: preserve-3d;
-      padding: 0;
-    }
-
-    #mainContent > div.glass-effect {
-      width: 100%;
-      max-width: none;
-      margin: 0;
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    /* Lirik Styles */
-    .lyric-line {
-      padding: 12px 16px;
-      margin: 4px 0;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-      opacity: 0.7;
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    .lyric-line.current {
-      color: #facc15;
-      font-weight: 500;
-      opacity: 1;
-      background: rgba(250, 204, 21, 0.1);
-      border-left: 3px solid #facc15;
-      transform: translateX(4px);
-    }
-
-    .lyric-line.passed {
-      opacity: 0.4;
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    .lyric-line.upcoming {
-      opacity: 0.8;
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    /* Control Buttons */
-    .control-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      transition: all 0.3s ease;
-    }
-
-    .control-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: scale(1.05);
-    }
-
-    /* Now Playing Text */
-    .now-playing-text {
-      background: linear-gradient(90deg, #facc15, #fef08a);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      font-weight: 600;
-    }
-
-    /* Grid Responsif */
-    .grid-responsive {
-      display: grid;
-      gap: 2rem;
-      grid-template-columns: repeat(2, 1fr);
-      grid-template-rows: auto auto;
-      padding: 1rem;
-    }
-
-    #playlist {
-      display: grid;
-      gap: 0.75rem; /* Dikurangi dari 1.5rem untuk merapatkan daftar musik */
-    }
-
-    #playlist > div.card {
-      min-width: 0;
-    }
-
-    /* Responsive Adjustments */
-    @media (max-width: 640px) {
-      .container {
-        padding: 1rem;
-      }
-      .grid-responsive {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
-      }
-    }
-
-    /* Empty State */
-    .empty-state {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px dashed rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      padding: 2.5rem;
-      text-align: center;
-    }
-
-    /* Partikel Animasi */
-    #particleCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
-      transform: translateZ(-200px) scale(2);
-    }
-
-    /* Loading Animation */
-    .loading {
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* Progress Bar */
-    .progress-container {
-      width: 100%;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #facc15, #fef08a);
-      width: 0;
-      transition: width 0.1s linear;
-    }
-
-    /* Volume Slider */
-    .volume-container {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .volume-slider {
-      -webkit-appearance: none;
-      width: 100px;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      outline: none;
-    }
-
-    .volume-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 12px;
-      height: 12px;
-      background: #facc15;
-      border-radius: 50%;
-      cursor: pointer;
-    }
-
-    /* Footer Visibility */
-    footer {
-      display: block;
-    }
-
-    footer.hidden {
-      display: none;
-    }
-
-    /* Start Prompt Text */
-    .start-prompt {
-      background: linear-gradient(90deg, #facc15, #fef08a);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      font-family: 'Playfair Display', serif;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    /* Footer Adjustments for Comfort */
-    footer .flex {
-      gap: 1rem;
-    }
-
-    footer p, footer span {
-      font-size: 0.875rem;
-      line-height: 1.5;
-    }
-  </style>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <canvas id="particleCanvas"></canvas>
 
-  <div class="floating-note absolute text-xl text-yellow-300/10 animate-[float_8s_ease-in-out_infinite]" style="top: 10%; left: 5%;">
-    <i class="fas fa-music"></i>
-  </div>
-  <div class="floating-note absolute text-xl text-yellow-300/10 animate-[float_8s_ease-in-out_infinite_-4s]" style="top: 25%; right: 8%;">
-    <i class="fas fa-musical-note"></i>
-  </div>
-  <div class="floating-note absolute text-xl text-yellow-300/10 animate-[float_8s_ease-in-out_infinite_-2s]" style="bottom: 15%; left: 10%;">
-    <i class="fas fa-compact-disc"></i>
-  </div>
-
-  <div id="mainContent" class="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <div class="glass-effect rounded-2xl p-6 sm:p-8 lg:p-10 relative z-10">
-      <div class="flex justify-between items-center mb-6">
-        <div>
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 font-['Playfair_Display']">
-            <i class="fas fa-headphones-alt mr-2 text-yellow-400"></i>
-            Playlist Musik Favorit
-          </h1>
-          <p class="text-gray-300 text-base sm:text-lg">Nikmati koleksi musik pilihan dengan pengalaman premium</p>
-        </div>
+  <div id="mainContent" class="container max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="glass-effect rounded-xl p-6 sm:p-8 relative z-10">
+      <div class="mb-6">
+        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2 font-['Playfair_Display']">
+          <i class="fas fa-headphones-alt mr-2 text-yellow-300"></i>
+          Playlist Musik
+        </h1>
+        <p class="text-gray-300 text-base">Koleksi musik pilihan dengan pengalaman elegan</p>
       </div>
 
-      <div id="startPrompt" class="start-prompt text-2xl sm:text-3xl mb-8 fade-in">
-        <i class="fas fa-headphones-alt mr-2"></i>
-        Pilih Artist Dan Musik Untuk Memulai
+      <div id="startPrompt" class="start-prompt text-xl sm:text-2xl mb-6 fade-in">
+        Pilih Artis dan Musik
       </div>
 
-      <button id="backButton" class="hidden mb-6 px-5 py-2 bg-yellow-400 text-gray-900 rounded-lg hover:bg-yellow-300 transition-all duration-300 font-medium text-sm">
+      <button id="backButton" class="hidden mb-6 px-4 py-2 bg-yellow-300 text-gray-900 rounded-lg hover:bg-yellow-200 transition-all duration-300 font-medium text-sm">
         <i class="fas fa-arrow-left mr-2"></i>
-        Kembali ke Daftar Artis
+        Kembali
       </button>
 
       <div id="artistList" class="grid-responsive"></div>
 
-      <div id="playlist" class="hidden space-y-4"></div>
+      <div id="playlist" class="hidden"></div>
 
       <audio id="audioPlayer" class="hidden"></audio>
 
-      <div id="musicControls" class="hidden mt-8">
-        <div class="glass-effect rounded-2xl p-6">
-          <div id="nowPlaying" class="text-lg font-medium now-playing-text mb-4"></div>
+      <div id="musicControls" class="hidden mt-6">
+        <div class="glass-effect rounded-xl p-6">
+          <div id="nowPlaying" class="text-base font-medium now-playing-text mb-4"></div>
           
           <div class="progress-container mb-4" id="progressContainer">
             <div class="progress-bar" id="progressBar"></div>
@@ -382,7 +55,7 @@
               <i class="fas fa-step-backward text-base"></i>
             </button>
             
-            <button id="playPauseBtn" onclick="togglePlayPause()" class="control-btn w-14 h-14 text-white flex items-center justify-center text-lg">
+            <button id="playPauseBtn" onclick="togglePlayPause()" class="control-btn w-12 h-12 text-white flex items-center justify-center text-lg">
               <i id="playPauseIcon" class="fas fa-play"></i>
             </button>
             
@@ -398,50 +71,13 @@
         </div>
       </div>
 
-      <div id="lyrics" class="hidden mt-8 p-6 glass-effect rounded-2xl text-white text-base max-h-96 overflow-y-auto">
-        <div class="empty-state">
-          <i class="fas fa-headphones text-3xl text-gray-400 mb-3"></i>
-          <p class="text-gray-300">Pilih lagu untuk menampilkan lirik</p>
-        </div>
-      </div>
-
-      <footer id="footer" class="mt-12 pt-6 border-t border-gray-700">
-        <div class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
-          <div class="text-gray-300 text-sm flex items-center space-x-4">
-            <p>&copy; 2025 <span class="font-medium text-yellow-400">Yudis</span>. All rights reserved.</p>
-            <div class="flex items-center space-x-2">
-              <i class="fas fa-eye text-gray-300"></i>
-              <span id="visitorCount" class="text-gray-300">Memuat jumlah pengunjung...</span>
-            </div>
-          </div>
-          
-          <div class="flex items-center space-x-4">
-            <p class="text-gray-300 text-sm font-medium">Contact Me:</p>
-            
-            <a href="https://instagram.com/yudis_299" target="_blank" 
-               class="flex items-center space-x-2 bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all duration-300">
-              <i class="fab fa-instagram text-base"></i>
-              <span class="text-sm">@yudis_299</span>
-            </a>
-            
-            <a href="https://wa.me/6285124039070" target="_blank" 
-               class="flex items-center space-x-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-300">
-              <i class="fab fa-whatsapp text-base"></i>
-              <span class="text-sm">WhatsApp</span>
-            </a>
-          </div>
-        </div>
-      </footer>
+      <div id="lyrics" class="hidden mt-6 p-6 glass-effect rounded-xl text-white text-base max-h-80 overflow-y-auto"></div>
     </div>
   </div>
 
   <script>
-    // Data Playlist (Disimpan di localStorage)
+    // Playlist dari localStorage
     let playlist = JSON.parse(localStorage.getItem('playlist')) || [
-    
-            
-    //===============================================//
-      
       {
         artist: "Random",
         title: "Bergema Sampai Selamanya",
@@ -463,10 +99,7 @@
         lyric: "lyrics/random/keep.js",
         artistPhoto: "/images/random/random.jpg"
       },
-      
-    //===============================================//
-    
-    {
+      {
         artist: "Hindia",
         title: "Everything U Are",
         mp3: "music/hindia/everything.mp3",
@@ -522,8 +155,6 @@
         lyric: "lyrics/hindia/nikmatnya.js",
         artistPhoto: "/images/hindia/hindia.jpg"
       },
-      
-     //===============================================//
       {
         artist: "Feast",
         title: "Feast",
@@ -545,7 +176,6 @@
         lyric: "lyrics/nina/otuan.js",
         artistPhoto: "/images/nina/nina.jpg"
       }
-      
     ];
 
     // DOM Elements
@@ -564,9 +194,7 @@
     const durationEl = document.getElementById('duration');
     const volumeSlider = document.getElementById('volumeSlider');
     const mainContent = document.getElementById('mainContent');
-    const footer = document.getElementById('footer');
     const startPrompt = document.getElementById('startPrompt');
-    const floatingNotes = document.querySelectorAll('.floating-note');
 
     // State
     let currentLyrics = [];
@@ -582,7 +210,7 @@
       return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
-    // Partikel Animasi
+    // Partikel Animasi (Optimasi)
     function initParticles() {
       const canvas = document.getElementById('particleCanvas');
       const ctx = canvas.getContext('2d');
@@ -590,14 +218,14 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const particleCount = 50;
+      const particleCount = 30; // Kurangi jumlah partikel
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          radius: Math.random() * 2 + 1,
-          speed: Math.random() * 0.5 + 0.2
+          radius: Math.random() * 1.5 + 0.5,
+          speed: Math.random() * 0.3 + 0.1
         });
       }
 
@@ -606,7 +234,7 @@
         particles.forEach(p => {
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(250, 204, 21, 0.2)';
+          ctx.fillStyle = 'rgba(250, 204, 21, 0.15)';
           ctx.fill();
           p.y -= p.speed;
           if (p.y < 0) p.y = canvas.height;
@@ -619,32 +247,6 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
       });
-    }
-
-    // Fungsi untuk menghasilkan ID unik per perangkat
-    function generateUniqueId() {
-      return 'visitor-' + Math.random().toString(36).substr(2, 9);
-    }
-
-    // Fungsi untuk menghitung dan menampilkan jumlah pengunjung
-    function updateVisitorCount() {
-      const visitorCountEl = document.getElementById('visitorCount');
-      if (!visitorCountEl) return;
-      
-      let visitorId = localStorage.getItem('visitorId');
-      if (!visitorId) {
-        visitorId = generateUniqueId();
-        localStorage.setItem('visitorId', visitorId);
-        
-        let visitors = JSON.parse(localStorage.getItem('visitors')) || [];
-        if (!visitors.includes(visitorId)) {
-          visitors.push(visitorId);
-          localStorage.setItem('visitors', JSON.stringify(visitors));
-        }
-      }
-      
-      const visitors = JSON.parse(localStorage.getItem('visitors')) || [];
-      visitorCountEl.textContent = `${visitors.length} Pengunjung`;
     }
 
     // Load Daftar Artis
@@ -660,74 +262,43 @@
         }
         artistsData[song.artist].songCount++;
       });
-      return Object.values(artistsData);
+      return Object.values(artistsData).filter(artist => artist.name);
     }
 
     function loadArtists() {
       artistList.innerHTML = '';
       const artists = getArtists();
       const totalArtists = artists.length;
-      let gridTemplateAreas = '';
-      let gridRows = 'auto auto';
 
-      if (totalArtists <= 1) {
-        gridRows = 'auto';
-      } else if (totalArtists === 2) {
-        gridRows = 'auto';
-      } else if (totalArtists === 3) {
-        gridTemplateAreas = `
-          "artist1 artist2"
-          "artist3 artist3"
-        `;
-        gridRows = 'auto auto';
-      } else if (totalArtists >= 4) {
-        gridTemplateAreas = `
-          "artist1 artist2"
-          "artist3 artist4"
-        `;
-        gridRows = 'auto auto';
-      }
-
-      artistList.style.gridTemplateColumns = 'repeat(2, 1fr)';
-      artistList.style.gridTemplateRows = gridRows;
-      if (gridTemplateAreas) {
-        artistList.style.gridTemplateAreas = gridTemplateAreas;
-      }
+      artistList.style.gridTemplateColumns = totalArtists <= 2 ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))';
+      artistList.style.gridTemplateRows = 'auto';
 
       artists.forEach((artistData, index) => {
         const artistElement = document.createElement('div');
         artistElement.classList.add('artist-card', 'fade-in');
-        artistElement.style.animationDelay = `${index * 0.15}s`;
-        if (gridTemplateAreas) {
-          artistElement.style.gridArea = `artist${index + 1}`;
-        }
+        artistElement.style.animationDelay = `${index * 0.1}s`;
         artistElement.innerHTML = `
           ${artistData.photo ? `
-            <div class="mb-4 flex justify-center">
-              <img src="${artistData.photo}" alt="${artistData.name}" 
-                   class="w-28 h-28 rounded-full object-cover border-2 border-yellow-400/50 shadow-lg">
+            <div class="mb-3 flex justify-center">
+              <img src="${artistData.photo}" alt="${artistData.name}" loading="lazy"
+                   class="w-24 h-24 rounded-full object-cover border-2 border-yellow-300/50">
             </div>
           ` : `
-            <div class="mb-4 flex justify-center">
-              <div class="no-image w-28 h-28 rounded-full bg-yellow-400/20 flex items-center justify-center">
-                <i class="fas fa-user-music text-3xl text-yellow-400"></i>
+            <div class="mb-3 flex justify-center">
+              <div class="no-image w-24 h-24 rounded-full bg-yellow-300/10 flex items-center justify-center">
+                <i class="fas fa-user-music text-2xl text-yellow-300"></i>
               </div>
             </div>
           `}
-          <h3 class="text-xl font-semibold text-white text-center">${artistData.name}</h3>
+          <h3 class="text-lg font-semibold text-white text-center">${artistData.name}</h3>
           <p class="text-gray-300 text-sm text-center">${artistData.songCount} lagu</p>
         `;
-        artistElement.addEventListener('click', () => {
-          showArtistSongs(artistData.name);
-        });
+        artistElement.addEventListener('click', () => showArtistSongs(artistData.name));
         artistList.appendChild(artistElement);
       });
 
-      // Tampilkan footer dan teks prompt di beranda
-      footer.classList.remove('hidden');
       startPrompt.classList.remove('hidden');
       lyricsContainer.classList.add('hidden');
-      updateVisitorCount();
     }
 
     // Tampilkan Lagu per Artis
@@ -735,7 +306,6 @@
       artistList.classList.add('hidden');
       playlistContainer.classList.remove('hidden');
       backButton.classList.remove('hidden');
-      footer.classList.add('hidden');
       startPrompt.classList.add('hidden');
       lyricsContainer.classList.remove('hidden');
       playlistContainer.innerHTML = '';
@@ -743,49 +313,45 @@
       currentPlaylist = playlist.filter(song => song.artist === artist);
       currentSongIndex = -1;
 
-      // Artist Header
       const artistHeader = document.createElement('div');
-      artistHeader.classList.add('text-center', 'mb-8', 'fade-in');
+      artistHeader.classList.add('text-center', 'mb-6', 'fade-in');
       const artistPhoto = currentPlaylist[0]?.artistPhoto;
       artistHeader.innerHTML = `
-        <div class="flex flex-col items-center space-y-4">
+        <div class="flex flex-col items-center space-y-3">
           ${artistPhoto ? `
-            <img src="${artistPhoto}" alt="${artist}" 
-                 class="w-32 h-32 rounded-full object-cover border-2 border-yellow-400/30 shadow-xl">
+            <img src="${artistPhoto}" alt="${artist}" loading="lazy"
+                 class="w-28 h-28 rounded-full object-cover border-2 border-yellow-300/30">
           ` : `
-            <div class="w-32 h-32 rounded-full bg-yellow-400/10 flex items-center justify-center">
-              <i class="fas fa-user-music text-3xl text-yellow-400"></i>
+            <div class="w-28 h-28 rounded-full bg-yellow-300/10 flex items-center justify-center">
+              <i class="fas fa-user-music text-2xl text-yellow-300"></i>
             </div>
           `}
           <div>
-            <h2 class="text-2xl sm:text-3xl font-semibold text-white font-['Playfair_Display']">${artist}</h2>
-            <p class="text-gray-300 text-base">${currentPlaylist.length} lagu tersedia</p>
+            <h2 class="text-xl sm:text-2xl font-semibold text-white font-['Playfair_Display']">${artist}</h2>
+            <p class="text-gray-300 text-sm">${currentPlaylist.length} lagu</p>
           </div>
         </div>
       `;
       playlistContainer.appendChild(artistHeader);
 
-      // Songs List
       currentPlaylist.forEach((song, index) => {
         const songElement = document.createElement('div');
-        songElement.classList.add('card', 'p-4', 'fade-in', 'flex', 'items-center', 'space-x-4', 'cursor-pointer');
-        songElement.style.animationDelay = `${index * 0.1}s`;
+        songElement.classList.add('card', 'p-3', 'fade-in', 'flex', 'items-center', 'space-x-3', 'cursor-pointer');
+        songElement.style.animationDelay = `${index * 0.05}s`;
         songElement.dataset.songIndex = index;
         songElement.innerHTML = `
-          <div class="text-yellow-400 text-xl">
+          <div class="text-yellow-300 text-lg">
             <i class="fas fa-play-circle"></i>
           </div>
           <div class="flex-1">
-            <h4 class="text-base font-medium text-white">${song.title}</h4>
-            <p class="text-gray-300 text-sm">${song.artist}</p>
+            <h4 class="text-sm font-medium text-white">${song.title}</h4>
+            <p class="text-gray-300 text-xs">${song.artist}</p>
           </div>
-          <div class="text-gray-400 text-sm">
+          <div class="text-gray-400 text-xs">
             ${index + 1}/${currentPlaylist.length}
           </div>
         `;
-        songElement.addEventListener('click', () => {
-          playSong(song, index);
-        });
+        songElement.addEventListener('click', () => playSong(song, index));
         playlistContainer.appendChild(songElement);
       });
     }
@@ -795,12 +361,12 @@
       currentSongIndex = index;
 
       document.querySelectorAll('#playlist > div.card').forEach(el => {
-        el.classList.remove('bg-yellow-400/10');
+        el.classList.remove('bg-yellow-300/10');
       });
 
       const currentSongElement = document.querySelector(`[data-song-index="${currentSongIndex}"]`);
       if (currentSongElement) {
-        currentSongElement.classList.add('bg-yellow-400/10');
+        currentSongElement.classList.add('bg-yellow-300/10');
       }
 
       audioPlayer.src = song.mp3;
@@ -808,7 +374,7 @@
         console.error('Gagal memutar audio:', error);
         nowPlaying.innerHTML = `
           <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
-          Gagal memutar lagu.
+          Gagal memutar: ${song.title}
         `;
       });
 
@@ -818,8 +384,8 @@
 
       nowPlaying.innerHTML = `
         <i class="fas fa-music mr-2"></i>
-        Sedang diputar: <span class="font-medium">${song.artist} - ${song.title}</span>
-        <br><span class="text-gray-300 text-sm">(${currentSongIndex + 1}/${currentPlaylist.length})</span>
+        ${song.artist} - ${song.title}
+        <span class="text-gray-300 text-xs">(${currentSongIndex + 1}/${currentPlaylist.length})</span>
       `;
 
       loadLyrics(song.lyric);
@@ -831,7 +397,12 @@
         audioPlayer.pause();
         isPlaying = false;
       } else {
-        audioPlayer.play();
+        audioPlayer.play().catch(() => {
+          nowPlaying.innerHTML = `
+            <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
+            Gagal memutar lagu
+          `;
+        });
         isPlaying = true;
       }
       updatePlayPauseButton();
@@ -844,11 +415,21 @@
     // Load Lirik
     function loadLyrics(lyricPath) {
       lyricsContainer.innerHTML = `
-        <div class="text-center py-8">
-          <i class="fas fa-spinner loading text-xl text-yellow-400 mb-3"></i>
-          <p class="text-gray-300">Memuat lirik...</p>
+        <div class="text-center py-6">
+          <i class="fas fa-spinner loading text-lg text-yellow-300 mb-2"></i>
+          <p class="text-gray-300 text-sm">Memuat lirik...</p>
         </div>
       `;
+
+      if (!lyricPath) {
+        lyricsContainer.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-music text-lg text-gray-400 mb-2"></i>
+            <p class="text-gray-300 text-sm">Tidak ada lirik</p>
+          </div>
+        `;
+        return;
+      }
 
       const oldScript = document.getElementById('lyricScript');
       if (oldScript) oldScript.remove();
@@ -859,7 +440,7 @@
       script.onload = () => {
         if (window.lyrics && Array.isArray(window.lyrics)) {
           currentLyrics = window.lyrics.filter(line => 
-            typeof line === 'object' && 
+            line && typeof line === 'object' && 
             typeof line.time === 'number' && 
             typeof line.text === 'string'
           );
@@ -870,25 +451,26 @@
           } else {
             lyricsContainer.innerHTML = `
               <div class="empty-state">
-                <i class="fas fa-exclamation-triangle text-xl text-orange-400 mb-3"></i>
-                <p class="text-gray-300">Format lirik tidak valid.</p>
+                <i class="fas fa-exclamation-triangle text-lg text-orange-400 mb-2"></i>
+                <p class="text-gray-300 text-sm">Format lirik tidak valid</p>
               </div>
             `;
           }
         } else {
           lyricsContainer.innerHTML = `
             <div class="empty-state">
-              <i class="fas fa-times-circle text-xl text-red-400 mb-3"></i>
-              <p class="text-gray-300">Lirik tidak valid.</p>
+              <i class="fas fa-times-circle text-lg text-red-400 mb-2"></i>
+              <p class="text-gray-300 text-sm">Lirik tidak valid</p>
             </div>
           `;
         }
       };
       script.onerror = () => {
+        console.error('Gagal memuat lirik:', lyricPath);
         lyricsContainer.innerHTML = `
           <div class="empty-state">
-            <i class="fas fa-exclamation-circle text-xl text-red-400 mb-3"></i>
-            <p class="text-gray-300">Gagal memuat lirik.</p>
+            <i class="fas fa-exclamation-circle text-lg text-red-400 mb-2"></i>
+            <p class="text-gray-300 text-sm">Gagal memuat lirik</p>
           </div>
         `;
       };
@@ -901,8 +483,8 @@
       if (!currentLyrics || !Array.isArray(currentLyrics)) {
         lyricsContainer.innerHTML = `
           <div class="empty-state">
-            <i class="fas fa-music text-xl text-gray-400 mb-3"></i>
-            <p class="text-gray-300">Tidak ada lirik untuk ditampilkan.</p>
+            <i class="fas fa-music text-lg text-gray-400 mb-2"></i>
+            <p class="text-gray-300 text-sm">Tidak ada lirik</p>
           </div>
         `;
         return;
@@ -958,7 +540,6 @@
         }
       }
 
-      // Update Progress Bar
       const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
       progressBar.style.width = `${progress}%`;
       currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
@@ -1017,16 +598,16 @@
         const nextSong = currentPlaylist[nextIndex];
         setTimeout(() => {
           playSong(nextSong, nextIndex);
-        }, 1000);
-      } else if (currentPlaylist.length > 0) {
+        }, 500);
+      } else {
         nowPlaying.innerHTML = `
           <i class="fas fa-check-circle mr-2 text-green-400"></i>
-          Playlist selesai - Semua lagu telah diputar
+          Playlist selesai
         `;
         musicControls.classList.add('hidden');
         currentSongIndex = -1;
         document.querySelectorAll('#playlist > div.card').forEach(el => {
-          el.classList.remove('bg-yellow-400/10');
+          el.classList.remove('bg-yellow-300/10');
         });
       }
     }
@@ -1034,10 +615,8 @@
     // Update Tampilan Lirik
     function updateLyricDisplay() {
       const lyricLines = document.querySelectorAll('.lyric-line');
-
       lyricLines.forEach((line, index) => {
         line.classList.remove('current', 'passed', 'upcoming');
-
         if (currentLineIndex === -1) {
           line.classList.add('upcoming');
         } else if (index < currentLineIndex) {
@@ -1061,12 +640,31 @@
       }
     }
 
+    // Debounce untuk mousemove
+    function debounce(func, wait) {
+      let timeout;
+      return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+
+    // Parallax Efek (Optimasi)
+    const handleMouseMove = debounce((e) => {
+      const x = (e.clientX / window.innerWidth) - 0.5;
+      const y = (e.clientY / window.innerHeight) - 0.5;
+      mainContent.style.transform = `rotateX(${y * 3}deg) rotateY(${x * -3}deg) translateZ(0)`;
+      const artistCards = document.querySelectorAll('.artist-card');
+      artistCards.forEach(card => {
+        card.style.transform = `translate(${x * 10}px, ${y * 10}px) translateZ(10px)`;
+      });
+    }, 10);
+
     // Event Listeners
     backButton.addEventListener('click', () => {
       artistList.classList.remove('hidden');
       playlistContainer.classList.add('hidden');
       backButton.classList.add('hidden');
-      footer.classList.remove('hidden');
       startPrompt.classList.remove('hidden');
       lyricsContainer.classList.add('hidden');
       musicControls.classList.add('hidden');
@@ -1081,18 +679,15 @@
       currentSongIndex = -1;
       playlistContainer.innerHTML = '';
 
-      // Clean up listeners
       audioPlayer.removeEventListener('timeupdate', handleTimeUpdate);
       audioPlayer.removeEventListener('ended', handleEnded);
       audioPlayer.removeEventListener('pause', handlePause);
       audioPlayer.removeEventListener('play', handlePlay);
       audioPlayer.removeEventListener('loadedmetadata', updateDuration);
 
-      // Reload daftar artis dan perbarui jumlah pengunjung
       loadArtists();
     });
 
-    // Progress Bar Interaction
     progressContainer.addEventListener('click', (e) => {
       const rect = progressContainer.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
@@ -1101,35 +696,17 @@
       audioPlayer.currentTime = percentage * audioPlayer.duration;
     });
 
-    // Volume Control
     volumeSlider.addEventListener('input', () => {
       audioPlayer.volume = volumeSlider.value;
     });
-    
-    // Parallax Efek Berdasarkan Mouse Position
-    window.addEventListener('mousemove', (e) => {
-      const x = (e.clientX / window.innerWidth) - 0.5;
-      const y = (e.clientY / window.innerHeight) - 0.5;
 
-      mainContent.style.transform = `rotateX(${y * 5}deg) rotateY(${x * -5}deg) translateZ(0)`;
-      floatingNotes.forEach(note => {
-        note.style.transform = `translate(${x * 50}px, ${y * 50}px)`;
-      });
-
-      // Tambahan efek parallax untuk kartu artis
-      const artistCards = document.querySelectorAll('.artist-card');
-      artistCards.forEach(card => {
-        card.style.transform = `translate(${x * 20}px, ${y * 20}px) translateZ(20px)`;
-      });
-    });
+    window.addEventListener('mousemove', handleMouseMove);
 
     // Inisialisasi
-    initParticles();
-    loadArtists();
     document.addEventListener('DOMContentLoaded', () => {
-      updateVisitorCount();
+      initParticles();
+      loadArtists();
     });
   </script>
 </body>
 </html>
-
