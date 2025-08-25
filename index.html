@@ -15,7 +15,7 @@
   <div id="mainContent" class="container max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <div class="glass-effect rounded-xl p-6 sm:p-8 relative z-10">
       <div id="startPrompt" class="start-prompt text-lg sm:text-xl mb-6 fade-in">
-        Jelajahi Kolelavin Koleksi Musik
+        Jelajahi Koleksi Musik
       </div>
 
       <button id="backButton" class="hidden mb-6 px-4 py-2 bg-yellow-200 text-gray-900 rounded-lg hover:bg-yellow-100 transition-all duration-300 font-medium text-sm">
@@ -220,7 +220,7 @@
     let currentSongIndex = -1;
     let isPlaying = false;
     let preloadedLyrics = {};
-    let isSwitchingSong = false; // Tambahan untuk mencegah multiple switch
+    let isSwitchingSong = false; // Untuk mencegah multiple switch
 
     // Preload semua lyrics unik saat page load
     function preloadAllLyrics() {
@@ -393,7 +393,7 @@
       });
     }
 
-    // Mainkan Lagu dengan delay 2 detik
+    // Mainkan Lagu dengan delay 0.5 detik
     function playSong(song, index) {
       if (isSwitchingSong) return; // Cegah multiple switch
       isSwitchingSong = true;
@@ -435,7 +435,7 @@
 
         loadLyrics(song.lyric);
         isSwitchingSong = false; // Reset flag setelah selesai
-      }, 2000); // Delay 2 detik
+      }, 500); // Delay 0.5 detik
     }
 
     // Toggle Play/Pause
@@ -630,7 +630,7 @@
       updatePlayPauseButton();
     }
 
-    // Navigasi Lagu dengan delay 2 detik
+    // Navigasi Lagu dengan delay 0.5 detik
     function playNextSongManual() {
       if (isSwitchingSong) return;
       if (currentPlaylist.length > 0 && currentSongIndex < currentPlaylist.length - 1) {
