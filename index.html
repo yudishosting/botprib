@@ -15,7 +15,7 @@
   <div id="mainContent" class="container max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <div class="glass-effect rounded-xl p-6 sm:p-8 relative z-10">
       <div id="startPrompt" class="start-prompt text-lg sm:text-xl mb-6 fade-in">
-        Jelajahi Koleksi Musik
+        Jelajahi Kolelavin Koleksi Musik
       </div>
 
       <button id="backButton" class="hidden mb-6 px-4 py-2 bg-yellow-200 text-gray-900 rounded-lg hover:bg-yellow-100 transition-all duration-300 font-medium text-sm">
@@ -220,6 +220,7 @@
     let currentSongIndex = -1;
     let isPlaying = false;
     let preloadedLyrics = {};
+    let isSwitchingSong = false; // Tambahan untuk mencegah multiple switch
 
     // Preload semua lyrics unik saat page load
     function preloadAllLyrics() {
@@ -392,39 +393,49 @@
       });
     }
 
-    // Mainkan Lagu
+    // Mainkan Lagu dengan delay 2 detik
     function playSong(song, index) {
-      currentSongIndex = index;
+      if (isSwitchingSong) return; // Cegah multiple switch
+      isSwitchingSong = true;
 
-      document.querySelectorAll('#playlist > div.card').forEach(el => {
-        el.classList.remove('bg-yellow-200/10');
-      });
+      // Hentikan audio saat ini dan reset
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
 
-      const currentSongElement = document.querySelector(`[data-song-index="${currentSongIndex}"]`);
-      if (currentSongElement) {
-        currentSongElement.classList.add('bg-yellow-200/10');
-      }
+      setTimeout(() => {
+        currentSongIndex = index;
 
-      audioPlayer.src = song.mp3;
-      audioPlayer.play().catch(error => {
-        console.error('Gagal memutar audio:', error);
+        document.querySelectorAll('#playlist > div.card').forEach(el => {
+          el.classList.remove('bg-yellow-200/10');
+        });
+
+        const currentSongElement = document.querySelector(`[data-song-index="${currentSongIndex}"]`);
+        if (currentSongElement) {
+          currentSongElement.classList.add('bg-yellow-200/10');
+        }
+
+        audioPlayer.src = song.mp3;
+        audioPlayer.play().catch(error => {
+          console.error('Gagal memutar audio:', error);
+          nowPlaying.innerHTML = `
+            <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
+            Gagal memutar: ${song.title}
+          `;
+        });
+
+        isPlaying = true;
+        updatePlayPauseButton();
+        musicControls.classList.remove('hidden');
+
         nowPlaying.innerHTML = `
-          <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
-          Gagal memutar: ${song.title}
+          <i class="fas fa-music mr-2"></i>
+          ${song.artist} - ${song.title}
+          <span class="text-gray-300 text-xs">(${currentSongIndex + 1}/${currentPlaylist.length})</span>
         `;
-      });
 
-      isPlaying = true;
-      updatePlayPauseButton();
-      musicControls.classList.remove('hidden');
-
-      nowPlaying.innerHTML = `
-        <i class="fas fa-music mr-2"></i>
-        ${song.artist} - ${song.title}
-        <span class="text-gray-300 text-xs">(${currentSongIndex + 1}/${currentPlaylist.length})</span>
-      `;
-
-      loadLyrics(song.lyric);
+        loadLyrics(song.lyric);
+        isSwitchingSong = false; // Reset flag setelah selesai
+      }, 2000); // Delay 2 detik
     }
 
     // Toggle Play/Pause
@@ -619,8 +630,9 @@
       updatePlayPauseButton();
     }
 
-    // Navigasi Lagu
+    // Navigasi Lagu dengan delay 2 detik
     function playNextSongManual() {
+      if (isSwitchingSong) return;
       if (currentPlaylist.length > 0 && currentSongIndex < currentPlaylist.length - 1) {
         const nextIndex = currentSongIndex + 1;
         const nextSong = currentPlaylist[nextIndex];
@@ -632,6 +644,7 @@
     }
 
     function playPreviousSong() {
+      if (isSwitchingSong) return;
       if (currentPlaylist.length > 0 && currentSongIndex > 0) {
         const prevIndex = currentSongIndex - 1;
         const prevSong = currentPlaylist[prevIndex];
@@ -647,9 +660,7 @@
       if (currentPlaylist.length > 0 && currentSongIndex < currentPlaylist.length - 1) {
         const nextIndex = currentSongIndex + 1;
         const nextSong = currentPlaylist[nextIndex];
-        setTimeout(() => {
-          playSong(nextSong, nextIndex);
-        }, 500);
+        playSong(nextSong, nextIndex);
       } else {
         nowPlaying.innerHTML = `
           <i class="fas fa-check-circle mr-2 text-green-400"></i>
