@@ -393,49 +393,49 @@
       });
     }
 
-    // Mainkan Lagu dengan delay 0.5 detik
+    // Mainkan Lagu tanpa delay (langsung)
     function playSong(song, index) {
       if (isSwitchingSong) return; // Cegah multiple switch
       isSwitchingSong = true;
 
-      // Hentikan audio saat ini dan reset
+      // Cleanup audio agresif
       audioPlayer.pause();
+      audioPlayer.src = ''; // Reset src untuk clear buffer
       audioPlayer.currentTime = 0;
 
-      setTimeout(() => {
-        currentSongIndex = index;
+      currentSongIndex = index;
 
-        document.querySelectorAll('#playlist > div.card').forEach(el => {
-          el.classList.remove('bg-yellow-200/10');
-        });
+      document.querySelectorAll('#playlist > div.card').forEach(el => {
+        el.classList.remove('bg-yellow-200/10');
+      });
 
-        const currentSongElement = document.querySelector(`[data-song-index="${currentSongIndex}"]`);
-        if (currentSongElement) {
-          currentSongElement.classList.add('bg-yellow-200/10');
-        }
+      const currentSongElement = document.querySelector(`[data-song-index="${currentSongIndex}"]`);
+      if (currentSongElement) {
+        currentSongElement.classList.add('bg-yellow-200/10');
+      }
 
-        audioPlayer.src = song.mp3;
-        audioPlayer.play().catch(error => {
-          console.error('Gagal memutar audio:', error);
-          nowPlaying.innerHTML = `
-            <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
-            Gagal memutar: ${song.title}
-          `;
-        });
-
-        isPlaying = true;
-        updatePlayPauseButton();
-        musicControls.classList.remove('hidden');
-
+      audioPlayer.src = song.mp3;
+      audioPlayer.load(); // Load audio untuk memastikan siap
+      audioPlayer.play().catch(error => {
+        console.error('Gagal memutar audio:', error);
         nowPlaying.innerHTML = `
-          <i class="fas fa-music mr-2"></i>
-          ${song.artist} - ${song.title}
-          <span class="text-gray-300 text-xs">(${currentSongIndex + 1}/${currentPlaylist.length})</span>
+          <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
+          Gagal memutar: ${song.title}
         `;
+      });
 
-        loadLyrics(song.lyric);
-        isSwitchingSong = false; // Reset flag setelah selesai
-      }, 500); // Delay 0.5 detik
+      isPlaying = true;
+      updatePlayPauseButton();
+      musicControls.classList.remove('hidden');
+
+      nowPlaying.innerHTML = `
+        <i class="fas fa-music mr-2"></i>
+        ${song.artist} - ${song.title}
+        <span class="text-gray-300 text-xs">(${currentSongIndex + 1}/${currentPlaylist.length})</span>
+      `;
+
+      loadLyrics(song.lyric);
+      isSwitchingSong = false; // Reset flag
     }
 
     // Toggle Play/Pause
@@ -630,7 +630,7 @@
       updatePlayPauseButton();
     }
 
-    // Navigasi Lagu dengan delay 0.5 detik
+    // Navigasi Lagu tanpa delay
     function playNextSongManual() {
       if (isSwitchingSong) return;
       if (currentPlaylist.length > 0 && currentSongIndex < currentPlaylist.length - 1) {
