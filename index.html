@@ -43,7 +43,7 @@
           </div>
 
           <div class="flex items-center justify-center space-x-4">
-            <button onclick="debouncedPlayPreviousSong()" class="control-btn w-10 h-10 text-white flex items-center justify-center">
+            <button onclick="playPreviousSong()" class="control-btn w-10 h-10 text-white flex items-center justify-center">
               <i class="fas fa-step-backward text-base"></i>
             </button>
             
@@ -51,7 +51,7 @@
               <i id="playPauseIcon" class="fas fa-play"></i>
             </button>
             
-            <button onclick="debouncedPlayNextSongManual()" class="control-btn w-10 h-10 text-white flex items-center justify-center">
+            <button onclick="playNextSongManual()" class="control-btn w-10 h-10 text-white flex items-center justify-center">
               <i class="fas fa-step-forward text-base"></i>
             </button>
 
@@ -79,9 +79,6 @@
   </div>
 
   <script>
-    // Cache untuk lirik
-    const lyricsCache = {};
-
     // Playlist dari localStorage
     let playlist = JSON.parse(localStorage.getItem('playlist')) || [
       {
@@ -103,6 +100,20 @@
         title: "ours to keep",
         mp3: "music/random/keep.mp3",
         lyric: "lyrics/random/keep.js",
+        artistPhoto: "/images/random/random.jpg"
+      },
+      {
+        artist: "Random",
+        title: "About You",
+        mp3: "music/random/aboutyou.mp3",
+        lyric: "lyrics/random/aboutyou.js",
+        artistPhoto: "/images/random/random.jpg"
+      },
+      {
+        artist: "Random",
+        title: "Sweet disposition",
+        mp3: "music/random/disposition.mp3",
+        lyric: "lyrics/random/disposition.js",
         artistPhoto: "/images/random/random.jpg"
       },
       {
@@ -224,14 +235,14 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const particleCount = 10; // Super minimal
+      const particleCount = 20;
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
           radius: Math.random() * 1 + 0.5,
-          speed: 0.1
+          speed: Math.random() * 0.2 + 0.1
         });
       }
 
@@ -240,7 +251,7 @@
         particles.forEach(p => {
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(229, 184, 0, 0.08)';
+          ctx.fillStyle = 'rgba(229, 184, 0, 0.1)';
           ctx.fill();
           p.y -= p.speed;
           if (p.y < 0) p.y = canvas.height;
@@ -253,49 +264,6 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
       });
-    }
-
-    // Validasi File
-    async function validateFile(path) {
-      try {
-        const response = await fetch(path, { method: 'HEAD' });
-        return response.ok;
-      } catch {
-        return false;
-      }
-    }
-
-    // Preload Lirik
-    async function preloadLyrics() {
-      const lyricPromises = playlist.map(async (song) => {
-        if (song.lyric) {
-          try {
-            const valid = await validateFile(song.lyric);
-            if (!valid) {
-              console.warn(`File lirik tidak ditemukan: ${song.lyric}`);
-              lyricsCache[song.lyric] = null;
-              return;
-            }
-            const response = await fetch(song.lyric);
-            const scriptText = await response.text();
-            const lyrics = eval(`(() => { ${scriptText}; return window.lyrics; })()`);
-            if (Array.isArray(lyrics)) {
-              lyricsCache[song.lyric] = lyrics.filter(line => 
-                line && typeof line === 'object' && 
-                typeof line.time === 'number' && 
-                typeof line.text === 'string'
-              );
-            } else {
-              lyricsCache[song.lyric] = null;
-              console.warn(`Format lirik tidak valid: ${song.lyric}`);
-            }
-          } catch (error) {
-            console.error(`Gagal preload lirik ${song.lyric}:`, error);
-            lyricsCache[song.lyric] = null;
-          }
-        }
-      });
-      await Promise.all(lyricPromises);
     }
 
     // Load Daftar Artis
@@ -314,22 +282,12 @@
       return Object.values(artistsData).filter(artist => artist.name);
     }
 
-    async function loadArtists() {
+    function loadArtists() {
       artistList.innerHTML = '';
       const artists = getArtists();
 
       artistList.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
       artistList.style.gridTemplateRows = 'auto';
-
-      for (const artistData of artists) {
-        if (artistData.photo) {
-          const validPhoto = await validateFile(artistData.photo);
-          if (!validPhoto) {
-            console.warn(`Foto artis tidak ditemukan: ${artistData.photo}`);
-            artistData.photo = null;
-          }
-        }
-      }
 
       artists.forEach((artistData, index) => {
         const artistElement = document.createElement('div');
@@ -360,7 +318,7 @@
     }
 
     // Tampilkan Lagu per Artis
-    async function showArtistSongs(artist) {
+    function showArtistSongs(artist) {
       artistList.classList.add('hidden');
       playlistContainer.classList.remove('hidden');
       backButton.classList.remove('hidden');
@@ -392,14 +350,6 @@
       `;
       playlistContainer.appendChild(artistHeader);
 
-      for (const song of currentPlaylist) {
-        const validMp3 = await validateFile(song.mp3);
-        if (!validMp3) {
-          console.warn(`File MP3 tidak ditemukan: ${song.mp3}`);
-          song.mp3 = null;
-        }
-      }
-
       currentPlaylist.forEach((song, index) => {
         const songElement = document.createElement('div');
         songElement.classList.add('card', 'p-2', 'fade-in', 'flex', 'items-center', 'space-x-2', 'cursor-pointer');
@@ -417,60 +367,24 @@
             ${index + 1}/${currentPlaylist.length}
           </div>
         `;
-        if (song.mp3) {
-          songElement.addEventListener('click', debounce(() => playSong(song, index), 50));
-        } else {
-          songElement.classList.add('disabled');
-          songElement.title = 'File lagu tidak ditemukan';
-        }
+        songElement.addEventListener('click', () => playSong(song, index));
         playlistContainer.appendChild(songElement);
       });
     }
 
-    // Debounce untuk klik cepat
-    function debounce(func, wait) {
-      let timeout;
-      return function (...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-      };
-    }
-
     // Mainkan Lagu
     function playSong(song, index) {
-      if (!song.mp3) {
-        nowPlaying.innerHTML = `
-          <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
-          File lagu tidak ditemukan: ${song.title}
-        `;
-        return;
-      }
-
-      // Reset state
       currentSongIndex = index;
-      currentLyrics = [];
-      currentLineIndex = -1;
-      lyricsContainer.innerHTML = '';
-      audioPlayer.pause();
-      audioPlayer.src = '';
 
-      // Bersihkan event listener
-      audioPlayer.removeEventListener('timeupdate', handleTimeUpdate);
-      audioPlayer.removeEventListener('ended', handleEnded);
-      audioPlayer.removeEventListener('pause', handlePause);
-      audioPlayer.removeEventListener('play', handlePlay);
-      audioPlayer.removeEventListener('loadedmetadata', updateDuration);
-
-      // Update UI
       document.querySelectorAll('#playlist > div.card').forEach(el => {
         el.classList.remove('bg-yellow-200/10');
       });
+
       const currentSongElement = document.querySelector(`[data-song-index="${currentSongIndex}"]`);
       if (currentSongElement) {
         currentSongElement.classList.add('bg-yellow-200/10');
       }
 
-      // Set audio source
       audioPlayer.src = song.mp3;
       audioPlayer.play().catch(error => {
         console.error('Gagal memutar audio:', error);
@@ -490,7 +404,6 @@
         <span class="text-gray-300 text-xs">(${currentSongIndex + 1}/${currentPlaylist.length})</span>
       `;
 
-      // Load lirik dari cache
       loadLyrics(song.lyric);
     }
 
@@ -515,7 +428,7 @@
       playPauseIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
     }
 
-    // Load Lirik dari Cache
+    // Load Lirik
     function loadLyrics(lyricPath) {
       lyricsContainer.innerHTML = `
         <div class="text-center py-4">
@@ -524,32 +437,60 @@
         </div>
       `;
 
-      if (!lyricPath || !lyricsCache[lyricPath]) {
+      if (!lyricPath) {
         lyricsContainer.innerHTML = `
           <div class="empty-state">
             <i class="fas fa-music text-base text-gray-400 mb-2"></i>
-            <p class="text-gray-300 text-xs">Lirik tidak tersedia</p>
+            <p class="text-gray-300 text-xs">Tidak ada lirik</p>
           </div>
         `;
-        currentLyrics = [];
-        currentLineIndex = -1;
         return;
       }
 
-      currentLyrics = lyricsCache[lyricPath];
-      if (currentLyrics.length > 0) {
-        displayLyrics();
-        startAutoScroll();
-      } else {
+      const oldScript = document.getElementById('lyricScript');
+      if (oldScript) oldScript.remove();
+
+      const script = document.createElement('script');
+      script.id = 'lyricScript';
+      script.src = lyricPath;
+      script.onload = () => {
+        if (window.lyrics && Array.isArray(window.lyrics)) {
+          currentLyrics = window.lyrics.filter(line => 
+            line && typeof line === 'object' && 
+            typeof line.time === 'number' && 
+            typeof line.text === 'string'
+          );
+
+          if (currentLyrics.length > 0) {
+            displayLyrics();
+            startAutoScroll();
+          } else {
+            lyricsContainer.innerHTML = `
+              <div class="empty-state">
+                <i class="fas fa-exclamation-triangle text-base text-orange-400 mb-2"></i>
+                <p class="text-gray-300 text-xs">Format lirik tidak valid</p>
+              </div>
+            `;
+          }
+        } else {
+          lyricsContainer.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-times-circle text-base text-red-400 mb-2"></i>
+              <p class="text-gray-300 text-xs">Lirik tidak valid</p>
+            </div>
+          `;
+        }
+      };
+      script.onerror = () => {
+        console.error('Gagal memuat lirik:', lyricPath);
         lyricsContainer.innerHTML = `
           <div class="empty-state">
-            <i class="fas fa-exclamation-triangle text-base text-orange-400 mb-2"></i>
-            <p class="text-gray-300 text-xs">Format lirik tidak valid</p>
+            <i class="fas fa-exclamation-circle text-base text-red-400 mb-2"></i>
+            <p class="text-gray-300 text-xs">Gagal memuat lirik</p>
           </div>
         `;
-        currentLyrics = [];
-        currentLineIndex = -1;
-      }
+      };
+      document.body.appendChild(script);
     }
 
     // Tampilkan Lirik
@@ -559,7 +500,7 @@
         lyricsContainer.innerHTML = `
           <div class="empty-state">
             <i class="fas fa-music text-base text-gray-400 mb-2"></i>
-            <p class="text-gray-300 text-xs">Lirik tidak tersedia</p>
+            <p class="text-gray-300 text-xs">Tidak ada lirik</p>
           </div>
         `;
         return;
@@ -582,6 +523,12 @@
     function startAutoScroll() {
       currentLineIndex = -1;
       updateLyricDisplay();
+
+      audioPlayer.removeEventListener('timeupdate', handleTimeUpdate);
+      audioPlayer.removeEventListener('ended', handleEnded);
+      audioPlayer.removeEventListener('pause', handlePause);
+      audioPlayer.removeEventListener('play', handlePlay);
+      audioPlayer.removeEventListener('loadedmetadata', updateDuration);
 
       audioPlayer.addEventListener('timeupdate', handleTimeUpdate);
       audioPlayer.addEventListener('ended', handleEnded);
@@ -638,9 +585,6 @@
     }
 
     // Navigasi Lagu
-    const debouncedPlayNextSongManual = debounce(playNextSongManual, 50);
-    const debouncedPlayPreviousSong = debounce(playPreviousSong, 50);
-
     function playNextSongManual() {
       if (currentPlaylist.length > 0 && currentSongIndex < currentPlaylist.length - 1) {
         const nextIndex = currentSongIndex + 1;
@@ -668,7 +612,9 @@
       if (currentPlaylist.length > 0 && currentSongIndex < currentPlaylist.length - 1) {
         const nextIndex = currentSongIndex + 1;
         const nextSong = currentPlaylist[nextIndex];
-        playSong(nextSong, nextIndex);
+        setTimeout(() => {
+          playSong(nextSong, nextIndex);
+        }, 500);
       } else {
         nowPlaying.innerHTML = `
           <i class="fas fa-check-circle mr-2 text-green-400"></i>
@@ -679,9 +625,6 @@
         document.querySelectorAll('#playlist > div.card').forEach(el => {
           el.classList.remove('bg-yellow-200/10');
         });
-        currentLyrics = [];
-        currentLineIndex = -1;
-        lyricsContainer.innerHTML = '';
       }
     }
 
@@ -714,6 +657,15 @@
     }
 
     // Debounce untuk mousemove
+    function debounce(func, wait) {
+      let timeout;
+      return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+
+    // Parallax Efek (Optimasi)
     const handleMouseMove = debounce((e) => {
       const x = (e.clientX / window.innerWidth) - 0.5;
       const y = (e.clientY / window.innerHeight) - 0.5;
@@ -733,7 +685,6 @@
       lyricsContainer.classList.add('hidden');
       musicControls.classList.add('hidden');
       audioPlayer.pause();
-      audioPlayer.src = '';
       isPlaying = false;
       updatePlayPauseButton();
       nowPlaying.textContent = '';
@@ -770,7 +721,7 @@
     // Inisialisasi
     document.addEventListener('DOMContentLoaded', () => {
       initParticles();
-      preloadLyrics().then(() => loadArtists());
+      loadArtists();
     });
   </script>
 </body>
