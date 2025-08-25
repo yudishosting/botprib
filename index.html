@@ -27,7 +27,7 @@
 
       <div id="playlist" class="hidden"></div>
 
-      <audio id="audioPlayer" class="hidden"></audio>
+      <audio id="audioPlayer" preload="auto" class="hidden"></audio>
 
       <div id="musicControls" class="hidden mt-6">
         <div class="glass-effect rounded-xl p-6">
@@ -219,6 +219,26 @@
     let currentPlaylist = [];
     let currentSongIndex = -1;
     let isPlaying = false;
+    let preloadedLyrics = {};
+
+    // Preload semua lyrics unik saat page load
+    function preloadAllLyrics() {
+      const uniqueLyricPaths = [...new Set(playlist.map(song => song.lyric).filter(path => path))];
+      uniqueLyricPaths.forEach(path => {
+        const script = document.createElement('script');
+        script.src = path;
+        script.onload = () => {
+          if (window.lyrics && Array.isArray(window.lyrics)) {
+            preloadedLyrics[path] = window.lyrics;
+            window.lyrics = null; // Clear global untuk hindari conflict
+          }
+        };
+        script.onerror = () => {
+          console.error(`Gagal preload lirik: ${path}`);
+        };
+        document.body.appendChild(script);
+      });
+    }
 
     // Format Waktu
     function formatTime(seconds) {
@@ -227,7 +247,7 @@
       return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
-    // Partikel Animasi (Optimasi)
+    // Partikel Animasi
     function initParticles() {
       const canvas = document.getElementById('particleCanvas');
       const ctx = canvas.getContext('2d');
@@ -447,6 +467,24 @@
         return;
       }
 
+      // Cek preload dulu
+      if (preloadedLyrics[lyricPath]) {
+        currentLyrics = preloadedLyrics[lyricPath].filter(line => 
+          line && typeof line === 'object' && 
+          typeof line.time === 'number' && 
+          typeof line.text === 'string'
+        );
+
+        if (currentLyrics.length > 0) {
+          displayLyrics();
+          startAutoScroll();
+        } else {
+          showLyricsError('Format lirik tidak valid');
+        }
+        return;
+      }
+
+      // Fallback: Load manual
       const oldScript = document.getElementById('lyricScript');
       if (oldScript) oldScript.remove();
 
@@ -461,36 +499,33 @@
             typeof line.text === 'string'
           );
 
+          preloadedLyrics[lyricPath] = currentLyrics; // Cache untuk next time
+
           if (currentLyrics.length > 0) {
             displayLyrics();
             startAutoScroll();
           } else {
-            lyricsContainer.innerHTML = `
-              <div class="empty-state">
-                <i class="fas fa-exclamation-triangle text-base text-orange-400 mb-2"></i>
-                <p class="text-gray-300 text-xs">Format lirik tidak valid</p>
-              </div>
-            `;
+            showLyricsError('Format lirik tidak valid');
           }
         } else {
-          lyricsContainer.innerHTML = `
-            <div class="empty-state">
-              <i class="fas fa-times-circle text-base text-red-400 mb-2"></i>
-              <p class="text-gray-300 text-xs">Lirik tidak valid</p>
-            </div>
-          `;
+          showLyricsError('Lirik tidak valid');
         }
       };
       script.onerror = () => {
         console.error('Gagal memuat lirik:', lyricPath);
-        lyricsContainer.innerHTML = `
-          <div class="empty-state">
-            <i class="fas fa-exclamation-circle text-base text-red-400 mb-2"></i>
-            <p class="text-gray-300 text-xs">Gagal memuat lirik</p>
-          </div>
-        `;
+        showLyricsError('Gagal memuat lirik');
       };
       document.body.appendChild(script);
+    }
+
+    // Helper untuk error lirik
+    function showLyricsError(message) {
+      lyricsContainer.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-exclamation-triangle text-base text-orange-400 mb-2"></i>
+          <p class="text-gray-300 text-xs">${message}</p>
+        </div>
+      `;
     }
 
     // Tampilkan Lirik
@@ -665,7 +700,7 @@
       };
     }
 
-    // Parallax Efek (Optimasi)
+    // Parallax Efek
     const handleMouseMove = debounce((e) => {
       const x = (e.clientX / window.innerWidth) - 0.5;
       const y = (e.clientY / window.innerHeight) - 0.5;
@@ -721,6 +756,7 @@
     // Inisialisasi
     document.addEventListener('DOMContentLoaded', () => {
       initParticles();
+      preloadAllLyrics();
       loadArtists();
     });
   </script>
