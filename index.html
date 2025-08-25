@@ -64,15 +64,17 @@
       </div>
 
       <div id="lyrics" class="hidden mt-6 p-6 glass-effect rounded-xl text-white text-base max-h-80 overflow-y-auto"></div>
-    </div>
 
-    <div class="contact-buttons fixed bottom-4 right-4 flex flex-col space-y-3 z-20">
-      <a href="https://instagram.com/yudis_299" target="_blank" class="contact-btn">
-        <i class="fab fa-instagram text-lg"></i>
-      </a>
-      <a href="https://wa.me/6285124039070" target="_blank" class="contact-btn">
-        <i class="fab fa-whatsapp text-lg"></i>
-      </a>
+      <footer class="mt-8 glass-effect rounded-xl p-4 flex justify-center space-x-4">
+        <a href="https://instagram.com/yudis_299" target="_blank" class="contact-btn">
+          <i class="fab fa-instagram text-base"></i>
+          <span class="contact-label">Instagram</span>
+        </a>
+        <a href="https://wa.me/6285124039070" target="_blank" class="contact-btn">
+          <i class="fab fa-whatsapp text-base"></i>
+          <span class="contact-label">WhatsApp</span>
+        </a>
+      </footer>
     </div>
   </div>
 
@@ -219,7 +221,7 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const particleCount = 20; // Lebih sedikit lagi
+      const particleCount = 20;
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
@@ -270,7 +272,7 @@
       artistList.innerHTML = '';
       const artists = getArtists();
 
-      artistList.style.gridTemplateColumns = 'repeat(auto-fit, minmax(180px, 1fr))';
+      artistList.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
       artistList.style.gridTemplateRows = 'auto';
 
       artists.forEach((artistData, index) => {
@@ -281,11 +283,11 @@
           ${artistData.photo ? `
             <div class="mb-2 flex justify-center">
               <img src="${artistData.photo}" alt="${artistData.name}" loading="lazy"
-                   class="w-20 h-20 rounded-full object-cover border border-yellow-200/50">
+                   class="w-24 h-24 rounded-full object-cover border border-yellow-200/40">
             </div>
           ` : `
             <div class="mb-2 flex justify-center">
-              <div class="no-image w-20 h-20 rounded-full bg-yellow-200/10 flex items-center justify-center">
+              <div class="no-image w-24 h-24 rounded-full bg-yellow-200/10 flex items-center justify-center">
                 <i class="fas fa-user-music text-xl text-yellow-200"></i>
               </div>
             </div>
@@ -320,9 +322,9 @@
         <div class="flex flex-col items-center space-y-2">
           ${artistPhoto ? `
             <img src="${artistPhoto}" alt="${artist}" loading="lazy"
-                 class="w-24 h-24 rounded-full object-cover border border-yellow-200/30">
+                 class="w-28 h-28 rounded-full object-cover border border-yellow-200/30">
           ` : `
-            <div class="w-24 h-24 rounded-full bg-yellow-200/10 flex items-center justify-center">
+            <div class="w-28 h-28 rounded-full bg-yellow-200/10 flex items-center justify-center">
               <i class="fas fa-user-music text-xl text-yellow-200"></i>
             </div>
           `}
