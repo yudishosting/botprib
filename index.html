@@ -25,7 +25,22 @@
 
       <div id="albumList" class="grid-responsive"></div>
 
-      <div id="playlist" class="hidden"></div>
+      <div id="playlist" class="hidden">
+        <div id="timerContainer" class="timer-container mb-4 flex items-center justify-center space-x-2">
+          <i class="fas fa-clock text-gray-300"></i>
+          <select id="sleepTimer" class="timer-select">
+            <option value="0">Timer Tidur</option>
+            <option value="5">5 Menit</option>
+            <option value="10">10 Menit</option>
+            <option value="15">15 Menit</option>
+            <option value="30">30 Menit</option>
+            <option value="60">1 Jam</option>
+            <option value="custom">Custom</option>
+          </select>
+          <input type="number" id="customTimerInput" class="timer-input hidden" min="1" placeholder="Menit" />
+          <span id="timerCountdown" class="text-xs text-gray-300 hidden">Sisa: 00:00</span>
+        </div>
+      </div>
 
       <audio id="audioPlayer" preload="auto" class="hidden"></audio>
 
@@ -54,18 +69,6 @@
             <button onclick="playNextSongManual()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Selanjutnya">
               <i class="fas fa-step-forward text-base"></i>
             </button>
-
-            <div class="timer-container">
-              <i class="fas fa-clock text-gray-300"></i>
-              <select id="sleepTimer" class="timer-select">
-                <option value="0">Timer Tidur</option>
-                <option value="15">15 Menit</option>
-                <option value="30">30 Menit</option>
-                <option value="45">45 Menit</option>
-                <option value="60">1 Jam</option>
-              </select>
-              <span id="timerCountdown" class="text-xs text-gray-300 ml-2 hidden">Sisa: 00:00</span>
-            </div>
 
             <div class="volume-container">
               <i class="fas fa-volume-up text-gray-300"></i>
@@ -240,6 +243,7 @@
     const startPrompt = document.getElementById('startPrompt');
     const sleepTimer = document.getElementById('sleepTimer');
     const timerCountdown = document.getElementById('timerCountdown');
+    const customTimerInput = document.getElementById('customTimerInput');
 
     // State
     let currentLyrics = [];
@@ -338,6 +342,7 @@
       }
       timerCountdown.classList.add('hidden');
       timerEndTime = null;
+      customTimerInput.classList.add('hidden');
 
       if (minutes > 0) {
         const milliseconds = minutes * 60 * 1000;
@@ -358,6 +363,7 @@
           sleepTimer.value = "0";
           timerCountdown.classList.add('hidden');
           timerEndTime = null;
+          customTimerInput.classList.add('hidden');
         }, milliseconds);
         timerId = setInterval(updateTimerCountdown, 1000);
         updateTimerCountdown();
@@ -374,15 +380,15 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const particleCount = 10; // Reduced further for smoothness
+      const particleCount = 8;
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          radius: Math.random() * 1.2 + 0.3,
-          speed: Math.random() * 0.1 + 0.03,
-          opacity: Math.random() * 0.2 + 0.05
+          radius: Math.random() * 1 + 0.2,
+          speed: Math.random() * 0.08 + 0.02,
+          opacity: Math.random() * 0.15 + 0.05
         });
       }
 
@@ -438,16 +444,16 @@
       albums.forEach((albumData, index) => {
         const albumElement = document.createElement('div');
         albumElement.classList.add('album-card', 'fade-in');
-        albumElement.style.animationDelay = `${index * 0.06}s`;
+        albumElement.style.animationDelay = `${index * 0.05}s`;
         albumElement.innerHTML = `
           ${albumData.photo ? `
             <div class="mb-2 flex justify-center">
               <img src="${albumData.photo}" alt="${albumData.name}" loading="lazy"
-                   class="w-24 h-24 rounded-lg object-cover border border-accent">
+                   class="w-24 h-24 rounded-lg object-cover border border-accent shimmer">
             </div>
           ` : `
             <div class="mb-2 flex justify-center">
-              <div class="no-image w-24 h-24 rounded-lg bg-dark-accent flex items-center justify-center">
+              <div class="no-image w-24 h-24 rounded-lg bg-dark-accent flex items-center justify-center shimmer">
                 <i class="fas fa-compact-disc text-xl text-accent"></i>
               </div>
             </div>
@@ -484,9 +490,9 @@
         <div class="flex flex-col items-center space-y-2">
           ${albumPhoto ? `
             <img src="${albumPhoto}" alt="${album}" loading="lazy"
-                 class="w-28 h-28 rounded-lg object-cover border border-accent">
+                 class="w-28 h-28 rounded-lg object-cover border border-accent shimmer">
           ` : `
-            <div class="w-28 h-28 rounded-lg bg-dark-accent flex items-center justify-center">
+            <div class="w-28 h-28 rounded-lg bg-dark-accent flex items-center justify-center shimmer">
               <i class="fas fa-compact-disc text-xl text-accent"></i>
             </div>
           `}
@@ -498,6 +504,8 @@
       `;
       playlistContainer.appendChild(albumHeader);
 
+      playlistContainer.appendChild(document.getElementById('timerContainer'));
+
       if (currentPlaylist.length === 0) {
         playlistContainer.innerHTML += '<p class="text-center text-gray-300">Tidak ada lagu ditemukan</p>';
         return;
@@ -506,7 +514,7 @@
       currentPlaylist.forEach((song, index) => {
         const songElement = document.createElement('div');
         songElement.classList.add('card', 'p-2', 'fade-in', 'flex', 'items-center', 'space-x-2', 'cursor-pointer');
-        songElement.style.animationDelay = `${index * 0.03}s`;
+        songElement.style.animationDelay = `${index * 0.02}s`;
         songElement.dataset.songIndex = index;
         songElement.innerHTML = `
           <div class="text-accent text-base">
@@ -889,15 +897,15 @@
       try {
         const x = (e.clientX / window.innerWidth) - 0.5;
         const y = (e.clientY / window.innerHeight) - 0.5;
-        mainContent.style.transform = `rotateX(${y * 1.2}deg) rotateY(${x * -1.2}deg) translateZ(0)`;
+        mainContent.style.transform = `rotateX(${y * 1}deg) rotateY(${x * -1}deg) translateZ(0)`;
         const albumCards = document.querySelectorAll('.album-card');
         albumCards.forEach(card => {
-          card.style.transform = `translate(${x * 5}px, ${y * 5}px) translateZ(5px)`;
+          card.style.transform = `translate(${x * 4}px, ${y * 4}px) translateZ(4px)`;
         });
       } catch (error) {
         console.error('Error pada parallax effect:', error);
       }
-    }, 60);
+    }, 70);
 
     if (backButton) {
       backButton.addEventListener('click', () => {
@@ -927,6 +935,7 @@
             timerEndTime = null;
             timerCountdown.classList.add('hidden');
             sleepTimer.value = "0";
+            customTimerInput.classList.add('hidden');
           }
 
           audioPlayer.removeEventListener('timeupdate', handleTimeUpdate);
@@ -966,13 +975,31 @@
       });
     }
 
-    if (sleepTimer) {
+    if (sleepTimer && customTimerInput) {
       sleepTimer.addEventListener('change', () => {
         try {
-          const minutes = parseInt(sleepTimer.value);
-          setSleepTimer(minutes);
+          if (sleepTimer.value === "custom") {
+            customTimerInput.classList.remove('hidden');
+            customTimerInput.focus();
+          } else {
+            customTimerInput.classList.add('hidden');
+            const minutes = parseInt(sleepTimer.value);
+            setSleepTimer(minutes);
+          }
         } catch (error) {
           console.error('Error saat mengatur timer tidur:', error);
+        }
+      });
+
+      customTimerInput.addEventListener('input', () => {
+        try {
+          const minutes = parseInt(customTimerInput.value);
+          if (!isNaN(minutes) && minutes > 0) {
+            setSleepTimer(minutes);
+            sleepTimer.value = "custom";
+          }
+        } catch (error) {
+          console.error('Error saat mengatur timer custom:', error);
         }
       });
     }

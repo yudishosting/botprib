@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  --primary-bg: #0a0e2a;
-  --secondary-bg: #1a1e4a;
+  --primary-bg: #080c2c;
+  --secondary-bg: #161a48;
   --accent: #5ab4ff;
-  --accent-hover: #80c7ff;
-  --dark-accent: rgba(90, 180, 255, 0.12);
+  --accent-hover: #85ccff;
+  --dark-accent: rgba(90, 180, 255, 0.1);
   --text-light: #f0f4f8;
-  --text-dark: #0a0e2a;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --text-dark: #080c2c;
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
 
 * {
@@ -20,7 +20,7 @@
 }
 
 body {
-  background: linear-gradient(145deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+  background: linear-gradient(150deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
   min-height: 100vh;
   color: var(--text-light);
   overflow-x: hidden;
@@ -29,36 +29,36 @@ body {
 
 .glass-effect {
   background: var(--glass-bg);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  border-radius: 18px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .glass-effect:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(90, 180, 255, 0.2);
+  box-shadow: 0 6px 22px rgba(90, 180, 255, 0.18);
 }
 
 .card {
   background: var(--dark-accent);
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  transition: all 0.25s ease;
+  border-radius: 14px;
+  transition: all 0.3s ease;
 }
 
 .card:hover {
-  background: rgba(90, 180, 255, 0.18);
+  background: rgba(90, 180, 255, 0.15);
   transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(90, 180, 255, 0.25);
+  box-shadow: 0 4px 12px rgba(90, 180, 255, 0.22);
 }
 
 .album-card {
   background: var(--glass-bg);
-  border-radius: 14px;
-  padding: 1rem;
-  transition: all 0.25s ease;
+  border-radius: 16px;
+  padding: 1.2rem;
+  transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -71,9 +71,9 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, transparent, rgba(90, 180, 255, 0.08));
+  background: linear-gradient(45deg, transparent, rgba(90, 180, 255, 0.06));
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.3s ease;
 }
 
 .album-card:hover::before {
@@ -81,17 +81,39 @@ body {
 }
 
 .album-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 18px rgba(90, 180, 255, 0.25);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(90, 180, 255, 0.22);
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(90, 180, 255, 0.15), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in {
-  animation: fadeIn 0.35s ease-out forwards;
+  animation: fadeIn 0.4s ease-out forwards;
 }
 
 ::-webkit-scrollbar {
@@ -112,51 +134,52 @@ body {
 }
 
 .lyric-line {
-  padding: 6px 12px;
+  padding: 7px 14px;
   margin: 3px 0;
-  border-radius: 8px;
-  transition: all 0.25s ease;
+  border-radius: 10px;
+  transition: all 0.3s ease;
   opacity: 0.7;
   font-size: 0.9rem;
-  line-height: 1.7;
+  line-height: 1.8;
 }
 
 .lyric-line.current {
   color: var(--accent);
   opacity: 1;
   background: var(--dark-accent);
-  border-left: 3px solid var(--accent);
+  border-left: 4px solid var(--accent);
+  box-shadow: 0 0 8px rgba(90, 180, 255, 0.3);
   font-weight: 500;
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
 .lyric-line.passed {
-  opacity: 0.3;
-  color: rgba(255, 255, 255, 0.3);
+  opacity: 0.25;
+  color: rgba(255, 255, 255, 0.25);
 }
 
 .lyric-line.upcoming {
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .control-btn {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 50%;
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
   position: relative;
 }
 
 .control-btn:hover {
   background: var(--dark-accent);
-  transform: scale(1.1);
-  box-shadow: 0 0 8px rgba(90, 180, 255, 0.25);
+  transform: scale(1.12);
+  box-shadow: 0 0 10px rgba(90, 180, 255, 0.25);
 }
 
 .control-btn::after {
   content: attr(data-tooltip);
   position: absolute;
-  bottom: -30px;
+  bottom: -32px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--secondary-bg);
@@ -165,7 +188,7 @@ body {
   border-radius: 6px;
   font-size: 0.7rem;
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.3s ease;
   pointer-events: none;
   z-index: 10;
 }
@@ -184,21 +207,21 @@ body {
 
 .grid-responsive {
   display: grid;
-  gap: 1.2rem;
+  gap: 1.3rem;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  padding: 0.6rem;
+  padding: 0.7rem;
 }
 
 #playlist {
   display: grid;
-  gap: 0.6rem;
+  gap: 0.7rem;
 }
 
 .empty-state {
   background: var(--glass-bg);
   border: 1px dashed var(--glass-border);
-  border-radius: 12px;
-  padding: 1.2rem;
+  border-radius: 14px;
+  padding: 1.3rem;
   text-align: center;
 }
 
@@ -210,11 +233,11 @@ body {
   height: 100%;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 .loading {
-  animation: spin 1.2s linear infinite;
+  animation: spin 1.3s linear infinite;
 }
 
 @keyframes spin {
@@ -241,7 +264,7 @@ body {
 .volume-container, .timer-container {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.7rem;
 }
 
 .volume-slider {
@@ -262,7 +285,7 @@ body {
   cursor: pointer;
 }
 
-.timer-select {
+.timer-select, .timer-input {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
@@ -270,10 +293,14 @@ body {
   color: var(--text-light);
   font-size: 0.8rem;
   outline: none;
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
 }
 
-.timer-select:focus {
+.timer-input {
+  width: 80px;
+}
+
+.timer-select:focus, .timer-input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 6px rgba(90, 180, 255, 0.2);
 }
@@ -285,7 +312,7 @@ body {
 
 .timer-countdown {
   font-family: 'Space Mono', monospace;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .start-prompt {
@@ -295,21 +322,21 @@ body {
   font-family: 'Space Mono', monospace;
   font-weight: 700;
   text-align: center;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
 }
 
 footer {
-  margin-top: 2.5rem;
+  margin-top: 3rem;
 }
 
 .contact-btn {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.7rem;
   background: var(--glass-bg);
   border-radius: 20px;
-  padding: 0.6rem 1.2rem;
-  transition: all 0.25s ease;
+  padding: 0.6rem 1.3rem;
+  transition: all 0.3s ease;
 }
 
 .contact-btn:hover {
@@ -321,19 +348,19 @@ footer {
 .contact-label {
   font-size: 0.8rem;
   color: var(--text-light);
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 @media (max-width: 640px) {
   .container {
-    padding: 0.9rem;
+    padding: 1rem;
   }
   .grid-responsive {
-    gap: 1rem;
+    gap: 1.1rem;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
   .contact-btn {
-    padding: 0.5rem 0.9rem;
+    padding: 0.5rem 1rem;
   }
   .contact-label {
     font-size: 0.75rem;
@@ -341,7 +368,7 @@ footer {
   .lyric-line {
     font-size: 0.85rem;
   }
-  .volume-slider {
+  .volume-slider, .timer-input {
     width: 60px;
   }
   .timer-select {
