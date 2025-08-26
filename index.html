@@ -26,23 +26,49 @@
       <div id="albumList" class="grid-responsive"></div>
 
       <div id="playlist" class="hidden">
-        <div id="timerSection" class="mb-6">
-          <div class="glass-effect rounded-xl p-4 flex items-center justify-between">
-            <div class="timer-container flex items-center gap-3">
-              <i class="fas fa-clock text-accent"></i>
-              <select id="sleepTimer" class="timer-select">
-                <option value="0">Timer Tidur</option>
-                <option value="10">10 Menit</option>
-                <option value="30">30 Menit</option>
-                <option value="60">1 Jam</option>
-                <option value="end">Sampai Selesai</option>
-                <option value="custom">Kustom</option>
-              </select>
-              <div id="customTimerInput" class="hidden flex items-center gap-2">
-                <input type="number" id="customTimerValue" min="1" max="180" placeholder="Menit" class="timer-input">
-                <button id="setCustomTimer" class="px-3 py-1 bg-accent text-dark rounded-lg hover:bg-accent-hover transition-all duration-300 text-sm">
-                  Set
-                </button>
+        <div id="playlistHeader" class="mb-4"></div>
+        <div id="songList" class="grid-playlist"></div>
+        <div id="lyrics" class="hidden mt-6 p-6 glass-effect rounded-xl text-white text-base max-h-80 overflow-y-auto"></div>
+        <div id="musicControls" class="hidden mt-6">
+          <div class="glass-effect rounded-xl p-6">
+            <div id="nowPlaying" class="text-base font-medium now-playing-text mb-4"></div>
+            
+            <div class="progress-container mb-4" id="progressContainer">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="flex justify-between text-sm text-gray-300 mb-4">
+              <span id="currentTime">0:00</span>
+              <span id="duration">0:00</span>
+            </div>
+
+            <div class="flex items-center justify-center space-x-4">
+              <button onclick="playPreviousSong()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Sebelumnya">
+                <i class="fas fa-step-backward text-base"></i>
+              </button>
+              
+              <button id="playPauseBtn" onclick="togglePlayPause()" class="control-btn w-12 h-12 text-white flex items-center justify-center text-lg" data-tooltip="Play/Pause">
+                <i id="playPauseIcon" class="fas fa-play"></i>
+              </button>
+              
+              <button onclick="playNextSongManual()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Selanjutnya">
+                <i class="fas fa-step-forward text-base"></i>
+              </button>
+            </div>
+            <div class="flex justify-center mt-4 space-x-2 items-center">
+              <div class="timer-container flex items-center">
+                <i class="fas fa-clock text-gray-300"></i>
+                <select id="sleepTimer" class="timer-select">
+                  <option value="0">Timer Tidur</option>
+                  <option value="10">10 Menit</option>
+                  <option value="30">30 Menit</option>
+                  <option value="60">60 Menit</option>
+                  <option value="custom">Kustom</option>
+                </select>
+              </div>
+              <div id="customTimerInput" class="hidden">
+                <input type="number" id="customMinutes" placeholder="Menit" class="custom-timer-input w-24">
+                <button onclick="setCustomTimer()" class="custom-timer-btn">Set</button>
               </div>
               <span id="timerCountdown" class="text-xs text-gray-300 ml-2 hidden">Sisa: 00:00</span>
             </div>
@@ -51,42 +77,6 @@
       </div>
 
       <audio id="audioPlayer" preload="auto" class="hidden"></audio>
-
-      <div id="musicControls" class="hidden mt-6">
-        <div class="glass-effect rounded-xl p-6">
-          <div id="nowPlaying" class="text-base font-medium now-playing-text mb-4"></div>
-          
-          <div class="progress-container mb-4" id="progressContainer">
-            <div class="progress-bar" id="progressBar"></div>
-          </div>
-          
-          <div class="flex justify-between text-sm text-gray-300 mb-4">
-            <span id="currentTime">0:00</span>
-            <span id="duration">0:00</span>
-          </div>
-
-          <div class="flex items-center justify-center space-x-4">
-            <button onclick="playPreviousSong()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Sebelumnya">
-              <i class="fas fa-step-backward text-base"></i>
-            </button>
-            
-            <button id="playPauseBtn" onclick="togglePlayPause()" class="control-btn w-12 h-12 text-white flex items-center justify-center text-lg" data-tooltip="Play/Pause">
-              <i id="playPauseIcon" class="fas fa-play"></i>
-            </button>
-            
-            <button onclick="playNextSongManual()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Selanjutnya">
-              <i class="fas fa-step-forward text-base"></i>
-            </button>
-
-            <div class="volume-container">
-              <i class="fas fa-volume-up text-gray-300"></i>
-              <input type="range" min="0" max="1" step="0.01" value="1" class="volume-slider" id="volumeSlider">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="lyrics" class="hidden mt-6 p-6 glass-effect rounded-xl text-white text-base max-h-80 overflow-y-auto"></div>
 
       <footer class="mt-8 glass-effect rounded-xl p-4 flex justify-center space-x-4">
         <a href="https://instagram.com/yudis_299" target="_blank" class="contact-btn">
@@ -102,157 +92,141 @@
   </div>
 
   <script>
-    // Playlist dengan struktur folder yang lebih terorganisir
+    // Playlist dari localStorage
     let playlist = JSON.parse(localStorage.getItem('playlist')) || [
       {
-        folder: "Random",
         artist: "Nadhif Basalamah",
         title: "Bergema Sampai Selamanya",
         mp3: "music/random/bergema.mp3",
         lyric: "lyrics/random/bergema.js",
-        artistPhoto: "images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg"
       },
       {
-        folder: "Random",
         artist: "Nadhif Basalamah",
         title: "Penjaga Hati",
         mp3: "music/random/penjagahati.mp3",
         lyric: "lyrics/random/penjagahati.js",
-        artistPhoto: "images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg"
       },
       {
-        folder: "Random",
         artist: "Kendis",
         title: "ours to keep",
         mp3: "music/random/keep.mp3",
         lyric: "lyrics/random/keep.js",
-        artistPhoto: "images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg"
       },
       {
-        folder: "Random",
         artist: "Matty Healy",
         title: "About You",
         mp3: "music/random/aboutyou.mp3",
         lyric: "lyrics/random/aboutyou.js",
-        artistPhoto: "images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg"
       },
       {
-        folder: "Random",
         artist: "Dougy Mandagi",
         title: "Sweet disposition",
         mp3: "music/random/disposition.mp3",
         lyric: "lyrics/random/disposition.js",
-        artistPhoto: "images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg"
       },
       {
-        folder: "Random",
         artist: "One direction",
         title: "where we are",
         mp3: "music/random/weare.mp3",
         lyric: "lyrics/random/weare.js",
-        artistPhoto: "images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg"
       },
       {
-        folder: "Random",
         artist: "Aris Lesmana",
         title: "Mangu",
         mp3: "music/random/mangu.mp3",
         lyric: "lyrics/random/mangu.js",
-        artistPhoto: "images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg"
       },
       {
-        folder: "Hindia",
         artist: "Hindia",
         title: "Everything U Are",
         mp3: "music/hindia/everything.mp3",
         lyric: "lyrics/hindia/everything.js",
-        artistPhoto: "images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg"
       },
       {
-        folder: "Hindia",
         artist: "Hindia",
         title: "Ramai Sepi Bersama",
         mp3: "music/hindia/bersama.mp3",
         lyric: "lyrics/hindia/bersama.js",
-        artistPhoto: "images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg"
       },
       {
-        folder: "Hindia",
         artist: "Hindia",
         title: "Semua Lagu Cinta Terdengar Sama",
         mp3: "music/hindia/sama.mp3",
         lyric: "lyrics/hindia/sama.js",
-        artistPhoto: "images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg"
       },
       {
-        folder: "Hindia",
         artist: "Hindia",
         title: "Rumah ke rumah",
         mp3: "music/hindia/rumah.mp3",
         lyric: "lyrics/hindia/rumah.js",
-        artistPhoto: "images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg"
       },
       {
-        folder: "Hindia",
         artist: "Hindia",
         title: "Evaluasi",
         mp3: "music/hindia/evaluasi.mp3",
         lyric: "lyrics/hindia/evaluasi.js",
-        artistPhoto: "images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg"
       },
       {
-        folder: "Hindia",
         artist: "Hindia",
         title: "Cincin",
         mp3: "music/hindia/cincin.mp3",
         lyric: "lyrics/hindia/cincin.js",
-        artistPhoto: "images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg"
       },
       {
-        folder: "Hindia",
         artist: "Hindia",
         title: "Kita Kesana",
         mp3: "music/hindia/kitakesana.mp3",
         lyric: "lyrics/hindia/kitakesana.js",
-        artistPhoto: "images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg"
       },
       {
-        folder: "Hindia",
         artist: "Hindia",
         title: "Rasakan Nikmatnya Hidup",
         mp3: "music/hindia/nikmatnya.mp3",
         lyric: "lyrics/hindia/nikmatnya.js",
-        artistPhoto: "images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg"
       },
       {
-        folder: "Nina",
         artist: "Feast",
         title: "Feast",
         mp3: "music/nina/feast.mp3",
         lyric: "lyrics/nina/feast.js",
-        artistPhoto: "images/nina/nina.jpg"
+        artistPhoto: "/images/nina/nina.jpg"
       },
       {
-        folder: "Nina",
         artist: "Feast",
         title: "Tarot",
         mp3: "music/nina/tarot.mp3",
         lyric: "lyrics/nina/tarot.js",
-        artistPhoto: "images/nina/nina.jpg"
+        artistPhoto: "/images/nina/nina.jpg"
       },
       {
-        folder: "Nina",
         artist: "Feast",
         title: "o,Tuan",
         mp3: "music/nina/otuan.mp3",
         lyric: "lyrics/nina/otuan.js",
-        artistPhoto: "images/nina/nina.jpg"
+        artistPhoto: "/images/nina/nina.jpg"
       }
     ];
 
     // DOM Elements
     const albumList = document.getElementById('albumList');
     const playlistContainer = document.getElementById('playlist');
+    const songListContainer = document.getElementById('songList');
+    const playlistHeader = document.getElementById('playlistHeader');
     const audioPlayer = document.getElementById('audioPlayer');
     const lyricsContainer = document.getElementById('lyrics');
     const backButton = document.getElementById('backButton');
@@ -264,14 +238,12 @@
     const progressBar = document.getElementById('progressBar');
     const currentTimeEl = document.getElementById('currentTime');
     const durationEl = document.getElementById('duration');
-    const volumeSlider = document.getElementById('volumeSlider');
     const mainContent = document.getElementById('mainContent');
     const startPrompt = document.getElementById('startPrompt');
     const sleepTimer = document.getElementById('sleepTimer');
     const timerCountdown = document.getElementById('timerCountdown');
     const customTimerInput = document.getElementById('customTimerInput');
-    const customTimerValue = document.getElementById('customTimerValue');
-    const setCustomTimer = document.getElementById('setCustomTimer');
+    const customMinutesInput = document.getElementById('customMinutes');
 
     // State
     let currentLyrics = [];
@@ -284,8 +256,9 @@
     let timerId = null;
     let timerEndTime = null;
 
-    function getAlbumFromPath(song) {
-      return song.folder || 'unknown';
+    function getAlbumFromPath(mp3Path) {
+      const parts = mp3Path.split('/');
+      return parts.length > 1 ? parts[1] : 'unknown';
     }
 
     async function checkAudioFile(url) {
@@ -351,7 +324,7 @@
       const remainingMs = timerEndTime - now;
       if (remainingMs <= 0) {
         timerCountdown.classList.add('hidden');
-        clearInterval(timerId);
+        clearTimeout(timerId);
         timerId = null;
         timerEndTime = null;
         return;
@@ -361,7 +334,7 @@
       timerCountdown.classList.remove('hidden');
     }
 
-    function setSleepTimer(minutes, isEndOfPlaylist = false) {
+    function setSleepTimer(minutes) {
       if (timerId) {
         clearTimeout(timerId);
         clearInterval(timerId);
@@ -370,18 +343,8 @@
       timerCountdown.classList.add('hidden');
       timerEndTime = null;
 
-      if (minutes > 0 || isEndOfPlaylist) {
-        let milliseconds;
-        if (isEndOfPlaylist) {
-          // Estimate remaining playlist duration
-          let totalDuration = 0;
-          for (let i = currentSongIndex; i < currentPlaylist.length; i++) {
-            totalDuration += 180; // Assume 3 minutes per song for estimation
-          }
-          milliseconds = totalDuration * 1000 - (audioPlayer.currentTime * 1000);
-        } else {
-          milliseconds = minutes * 60 * 1000;
-        }
+      if (minutes > 0) {
+        const milliseconds = minutes * 60 * 1000;
         timerEndTime = Date.now() + milliseconds;
         timerId = setTimeout(() => {
           audioPlayer.pause();
@@ -393,17 +356,28 @@
           `;
           musicControls.classList.add('hidden');
           currentSongIndex = -1;
-          document.querySelectorAll('#playlist > div.card').forEach(el => {
+          document.querySelectorAll('#songList > div.card').forEach(el => {
             el.classList.remove('bg-dark-accent');
           });
           sleepTimer.value = "0";
-          customTimerInput.classList.add('hidden');
           timerCountdown.classList.add('hidden');
           timerEndTime = null;
         }, milliseconds);
+        
         timerId = setInterval(updateTimerCountdown, 1000);
         updateTimerCountdown();
       }
+    }
+
+    function setCustomTimer() {
+      const customMinutes = parseInt(customMinutesInput.value);
+      if (isNaN(customMinutes) || customMinutes <= 0) {
+        alert("Masukkan menit yang valid!");
+        return;
+      }
+      setSleepTimer(customMinutes);
+      customTimerInput.classList.add('hidden');
+      sleepTimer.value = "0";
     }
 
     function initParticles() {
@@ -451,12 +425,13 @@
     function getAlbums() {
       const albumsData = {};
       playlist.forEach(song => {
-        const album = getAlbumFromPath(song);
+        const album = getAlbumFromPath(song.mp3);
         if (!albumsData[album]) {
           albumsData[album] = {
             name: album.charAt(0).toUpperCase() + album.slice(1),
             songCount: 0,
-            photo: song.artistPhoto
+            photo: song.artistPhoto,
+            artist: song.artist
           };
         }
         albumsData[album].songCount++;
@@ -502,26 +477,29 @@
       });
 
       startPrompt.classList.remove('hidden');
+      playlistContainer.classList.add('hidden');
       lyricsContainer.classList.add('hidden');
+      musicControls.classList.add('hidden');
     }
 
     function showAlbumSongs(album) {
-      if (!albumList || !playlistContainer || !backButton || !startPrompt || !lyricsContainer) return;
+      if (!albumList || !playlistContainer || !backButton || !startPrompt) return;
       
       albumList.classList.add('hidden');
       playlistContainer.classList.remove('hidden');
       backButton.classList.remove('hidden');
       startPrompt.classList.add('hidden');
       lyricsContainer.classList.remove('hidden');
-      playlistContainer.innerHTML = '';
+      songListContainer.innerHTML = '';
 
-      const filteredSongs = playlist.filter(song => getAlbumFromPath(song) === album);
+      const filteredSongs = playlist.filter(song => getAlbumFromPath(song.mp3) === album);
       currentPlaylist = filteredSongs;
       currentSongIndex = -1;
 
       const albumHeader = document.createElement('div');
       albumHeader.classList.add('text-center', 'mb-4', 'fade-in');
       const albumPhoto = currentPlaylist[0]?.artistPhoto;
+      const albumArtist = currentPlaylist[0]?.artist;
       albumHeader.innerHTML = `
         <div class="flex flex-col items-center space-y-2">
           ${albumPhoto ? `
@@ -534,22 +512,18 @@
           `}
           <div>
             <h2 class="text-lg font-medium text-white font-['Space_Mono']">${album.charAt(0).toUpperCase() + album.slice(1)}</h2>
-            <p class="text-gray-300 text-xs">${currentPlaylist.length} lagu</p>
+            <p class="text-gray-300 text-xs">${albumArtist} - ${currentPlaylist.length} lagu</p>
           </div>
         </div>
       `;
-      playlistContainer.appendChild(albumHeader);
-
-      const timerSection = document.getElementById('timerSection');
-      playlistContainer.appendChild(timerSection);
+      playlistHeader.innerHTML = '';
+      playlistHeader.appendChild(albumHeader);
 
       if (currentPlaylist.length === 0) {
-        playlistContainer.innerHTML += '<p class="text-center text-gray-300">Tidak ada lagu ditemukan</p>';
+        songListContainer.innerHTML = '<p class="text-center text-gray-300">Tidak ada lagu ditemukan</p>';
         return;
       }
 
-      const songListContainer = document.createElement('div');
-      songListContainer.classList.add('song-list');
       currentPlaylist.forEach((song, index) => {
         const songElement = document.createElement('div');
         songElement.classList.add('card', 'p-2', 'fade-in', 'flex', 'items-center', 'space-x-2', 'cursor-pointer');
@@ -570,7 +544,6 @@
         songElement.addEventListener('click', () => playSong(song, index));
         songListContainer.appendChild(songElement);
       });
-      playlistContainer.appendChild(songListContainer);
     }
 
     async function playSong(song, index) {
@@ -594,7 +567,7 @@
 
         currentSongIndex = index;
 
-        document.querySelectorAll('#playlist > div.song-list > div.card').forEach(el => {
+        document.querySelectorAll('#songList > div.card').forEach(el => {
           el.classList.remove('bg-dark-accent');
         });
 
@@ -882,12 +855,9 @@
         `;
         musicControls.classList.add('hidden');
         currentSongIndex = -1;
-        document.querySelectorAll('#playlist > div.song-list > div.card').forEach(el => {
+        document.querySelectorAll('#songList > div.card').forEach(el => {
           el.classList.remove('bg-dark-accent');
         });
-        if (sleepTimer.value === 'end') {
-          setSleepTimer(0, true);
-        }
         return;
       }
       const nextSong = currentPlaylist[nextIndex];
@@ -969,7 +939,8 @@
           currentLineIndex = -1;
           currentPlaylist = [];
           currentSongIndex = -1;
-          playlistContainer.innerHTML = '';
+          songListContainer.innerHTML = '';
+          customTimerInput.classList.add('hidden');
 
           if (timerId) {
             clearTimeout(timerId);
@@ -978,7 +949,6 @@
             timerEndTime = null;
             timerCountdown.classList.add('hidden');
             sleepTimer.value = "0";
-            customTimerInput.classList.add('hidden');
           }
 
           audioPlayer.removeEventListener('timeupdate', handleTimeUpdate);
@@ -1008,51 +978,18 @@
       });
     }
 
-    if (volumeSlider) {
-      volumeSlider.addEventListener('input', () => {
-        try {
-          audioPlayer.volume = volumeSlider.value;
-        } catch (error) {
-          console.error('Error saat mengatur volume:', error);
-        }
-      });
-    }
-
     if (sleepTimer) {
       sleepTimer.addEventListener('change', () => {
         try {
-          const value = sleepTimer.value;
-          if (value === 'custom') {
+          if (sleepTimer.value === 'custom') {
             customTimerInput.classList.remove('hidden');
-            customTimerValue.focus();
           } else {
             customTimerInput.classList.add('hidden');
-            if (value === 'end') {
-              setSleepTimer(0, true);
-            } else {
-              const minutes = parseInt(value);
-              setSleepTimer(minutes);
-            }
+            const minutes = parseInt(sleepTimer.value);
+            setSleepTimer(minutes);
           }
         } catch (error) {
           console.error('Error saat mengatur timer tidur:', error);
-        }
-      });
-    }
-
-    if (setCustomTimer) {
-      setCustomTimer.addEventListener('click', () => {
-        try {
-          const minutes = parseInt(customTimerValue.value);
-          if (minutes >= 1 && minutes <= 180) {
-            setSleepTimer(minutes);
-            customTimerInput.classList.add('hidden');
-            sleepTimer.value = 'custom';
-          } else {
-            alert('Masukkan waktu antara 1 dan 180 menit.');
-          }
-        } catch (error) {
-          console.error('Error saat mengatur timer kustom:', error);
         }
       });
     }

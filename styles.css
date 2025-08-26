@@ -189,12 +189,7 @@ body {
   padding: 0.6rem;
 }
 
-#playlist {
-  display: grid;
-  gap: 0.6rem;
-}
-
-.song-list {
+#songList {
   display: grid;
   gap: 0.6rem;
 }
@@ -243,28 +238,10 @@ body {
   transition: width 0.15s linear;
 }
 
-.volume-container, .timer-container {
+.timer-container {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-}
-
-.volume-slider {
-  -webkit-appearance: none;
-  width: 80px;
-  height: 3px;
-  background: var(--glass-border);
-  border-radius: 3px;
-  outline: none;
-}
-
-.volume-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 10px;
-  height: 10px;
-  background: var(--accent);
-  border-radius: 50%;
-  cursor: pointer;
 }
 
 .timer-select {
@@ -286,23 +263,6 @@ body {
 .timer-select option {
   background: var(--secondary-bg);
   color: var(--text-light);
-}
-
-.timer-input {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 0.4rem 0.8rem;
-  color: var(--text-light);
-  font-size: 0.8rem;
-  width: 80px;
-  outline: none;
-  transition: all 0.25s ease;
-}
-
-.timer-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 6px rgba(90, 180, 255, 0.2);
 }
 
 .timer-countdown {
@@ -346,6 +306,36 @@ footer {
   opacity: 0.85;
 }
 
+.custom-timer-input {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 0.4rem 0.8rem;
+  color: var(--text-light);
+  font-size: 0.8rem;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.custom-timer-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 6px rgba(90, 180, 255, 0.2);
+}
+
+.custom-timer-btn {
+  background: var(--accent);
+  color: var(--text-dark);
+  font-weight: 500;
+  border-radius: 20px;
+  padding: 0.4rem 0.8rem;
+  transition: all 0.25s ease;
+}
+
+.custom-timer-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
 @media (max-width: 640px) {
   .container {
     padding: 0.9rem;
@@ -363,14 +353,14 @@ footer {
   .lyric-line {
     font-size: 0.85rem;
   }
-  .volume-slider {
-    width: 60px;
-  }
-  .timer-select, .timer-input {
+  .timer-select, .custom-timer-input, .custom-timer-btn {
     font-size: 0.75rem;
     padding: 0.35rem 0.7rem;
   }
   .timer-countdown {
     font-size: 0.7rem;
+  }
+  .custom-timer-input {
+    width: 60px;
   }
 }
