@@ -7,7 +7,7 @@
   <title>Playlist Musik</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <canvas id="particleCanvas"></canvas>
@@ -18,7 +18,9 @@
         Jelajahi Koleksi Musik
       </div>
 
-      <button id="backButton" class="hidden mb-6 px-4 py-2 bg-yellow-200 text-gray-900 rounded-lg hover:bg-yellow-100 transition-all duration-300 font-medium text-sm">
+      <input type="text" id="searchInput" placeholder="Cari album atau lagu..." class="mb-6">
+
+      <button id="backButton" class="hidden mb-6 px-4 py-2 bg-accent text-dark rounded-lg hover:bg-accent-hover transition-all duration-300 font-medium text-sm">
         <i class="fas fa-arrow-left mr-2"></i>
         Kembali
       </button>
@@ -43,16 +45,24 @@
           </div>
 
           <div class="flex items-center justify-center space-x-4">
-            <button onclick="playPreviousSong()" class="control-btn w-10 h-10 text-white flex items-center justify-center">
+            <button onclick="playPreviousSong()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Sebelumnya">
               <i class="fas fa-step-backward text-base"></i>
             </button>
             
-            <button id="playPauseBtn" onclick="togglePlayPause()" class="control-btn w-12 h-12 text-white flex items-center justify-center text-lg">
+            <button id="playPauseBtn" onclick="togglePlayPause()" class="control-btn w-12 h-12 text-white flex items-center justify-center text-lg" data-tooltip="Play/Pause">
               <i id="playPauseIcon" class="fas fa-play"></i>
             </button>
             
-            <button onclick="playNextSongManual()" class="control-btn w-10 h-10 text-white flex items-center justify-center">
+            <button onclick="playNextSongManual()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Selanjutnya">
               <i class="fas fa-step-forward text-base"></i>
+            </button>
+
+            <button id="shuffleBtn" onclick="toggleShuffle()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Shuffle">
+              <i class="fas fa-random text-base"></i>
+            </button>
+
+            <button id="repeatBtn" onclick="toggleRepeat()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Repeat">
+              <i class="fas fa-redo text-base"></i>
             </button>
 
             <div class="volume-container">
@@ -226,6 +236,9 @@
     const volumeSlider = document.getElementById('volumeSlider');
     const mainContent = document.getElementById('mainContent');
     const startPrompt = document.getElementById('startPrompt');
+    const searchInput = document.getElementById('searchInput');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const repeatBtn = document.getElementById('repeatBtn');
 
     // State
     let currentLyrics = [];
@@ -235,14 +248,15 @@
     let isPlaying = false;
     let preloadedLyrics = {};
     let isSwitchingSong = false;
+    let isShuffle = false;
+    let isRepeat = false;
+    let originalPlaylist = [];
 
-    // Fungsi untuk ekstrak nama album dari path mp3
     function getAlbumFromPath(mp3Path) {
       const parts = mp3Path.split('/');
       return parts.length > 1 ? parts[1] : 'unknown';
     }
 
-    // Cek apakah file audio valid
     async function checkAudioFile(url) {
       try {
         const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
@@ -257,7 +271,6 @@
       }
     }
 
-    // Retry mechanism untuk play audio
     async function tryPlayAudio(audio, url, maxRetries = 3, retryDelay = 500) {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
@@ -276,7 +289,6 @@
       return false;
     }
 
-    // Preload semua lyrics unik saat page load
     function preloadAllLyrics() {
       const uniqueLyricPaths = [...new Set(playlist.map(song => song.lyric).filter(path => path))];
       uniqueLyricPaths.forEach(path => {
@@ -285,7 +297,7 @@
         script.onload = () => {
           if (window.lyrics && Array.isArray(window.lyrics)) {
             preloadedLyrics[path] = window.lyrics;
-            window.lyrics = null; // Clear global untuk hindari conflict
+            window.lyrics = null;
           }
         };
         script.onerror = () => {
@@ -295,7 +307,6 @@
       });
     }
 
-    // Format Waktu
     function formatTime(seconds) {
       if (isNaN(seconds)) return '0:00';
       const minutes = Math.floor(seconds / 60);
@@ -303,7 +314,6 @@
       return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
-    // Partikel Animasi
     function initParticles() {
       const canvas = document.getElementById('particleCanvas');
       if (!canvas) return;
@@ -314,7 +324,7 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const particleCount = 20;
+      const particleCount = 15;
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
@@ -330,7 +340,7 @@
         particles.forEach(p => {
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(229, 184, 0, 0.1)';
+          ctx.fillStyle = 'rgba(255, 204, 77, 0.15)';
           ctx.fill();
           p.y -= p.speed;
           if (p.y < 0) p.y = canvas.height;
@@ -345,14 +355,13 @@
       });
     }
 
-    // Load Daftar Album
     function getAlbums() {
       const albumsData = {};
       playlist.forEach(song => {
         const album = getAlbumFromPath(song.mp3);
         if (!albumsData[album]) {
           albumsData[album] = {
-            name: album.charAt(0).toUpperCase() + album.slice(1), // Capitalize nama album
+            name: album.charAt(0).toUpperCase() + album.slice(1),
             songCount: 0,
             photo: song.artistPhoto
           };
@@ -362,13 +371,22 @@
       return Object.values(albumsData).filter(album => album.name);
     }
 
-    function loadAlbums() {
+    function loadAlbums(searchQuery = '') {
       if (!albumList) return;
       albumList.innerHTML = '';
-      const albums = getAlbums();
+      let albums = getAlbums();
+
+      if (searchQuery) {
+        albums = albums.filter(album => album.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      }
 
       albumList.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
       albumList.style.gridTemplateRows = 'auto';
+
+      if (albums.length === 0) {
+        albumList.innerHTML = '<p class="text-center text-gray-300">Tidak ada album ditemukan</p>';
+        return;
+      }
 
       albums.forEach((albumData, index) => {
         const albumElement = document.createElement('div');
@@ -378,19 +396,19 @@
           ${albumData.photo ? `
             <div class="mb-2 flex justify-center">
               <img src="${albumData.photo}" alt="${albumData.name}" loading="lazy"
-                   class="w-24 h-24 rounded-full object-cover border border-yellow-200/40">
+                   class="w-24 h-24 rounded-full object-cover border border-accent">
             </div>
           ` : `
             <div class="mb-2 flex justify-center">
-              <div class="no-image w-24 h-24 rounded-full bg-yellow-200/10 flex items-center justify-center">
-                <i class="fas fa-compact-disc text-xl text-yellow-200"></i>
+              <div class="no-image w-24 h-24 rounded-full bg-dark-accent flex items-center justify-center">
+                <i class="fas fa-compact-disc text-xl text-accent"></i>
               </div>
             </div>
           `}
           <h3 class="text-base font-medium text-white text-center">${albumData.name}</h3>
           <p class="text-gray-300 text-xs text-center">${albumData.songCount} lagu</p>
         `;
-        albumElement.addEventListener('click', () => showAlbumSongs(albumData.name.toLowerCase()));
+        albumElement.addEventListener('click', () => showAlbumSongs(albumData.name.toLowerCase(), searchQuery));
         albumList.appendChild(albumElement);
       });
 
@@ -398,8 +416,7 @@
       lyricsContainer.classList.add('hidden');
     }
 
-    // Tampilkan Lagu per Album
-    function showAlbumSongs(album) {
+    function showAlbumSongs(album, searchQuery = '') {
       if (!albumList || !playlistContainer || !backButton || !startPrompt || !lyricsContainer) return;
       
       albumList.classList.add('hidden');
@@ -409,7 +426,16 @@
       lyricsContainer.classList.remove('hidden');
       playlistContainer.innerHTML = '';
 
-      currentPlaylist = playlist.filter(song => getAlbumFromPath(song.mp3) === album);
+      let filteredSongs = playlist.filter(song => getAlbumFromPath(song.mp3) === album);
+      if (searchQuery) {
+        filteredSongs = filteredSongs.filter(song => 
+          song.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+          song.artist.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      currentPlaylist = filteredSongs;
+      originalPlaylist = [...currentPlaylist];
       currentSongIndex = -1;
 
       const albumHeader = document.createElement('div');
@@ -419,10 +445,10 @@
         <div class="flex flex-col items-center space-y-2">
           ${albumPhoto ? `
             <img src="${albumPhoto}" alt="${album}" loading="lazy"
-                 class="w-28 h-28 rounded-full object-cover border border-yellow-200/30">
+                 class="w-28 h-28 rounded-full object-cover border border-accent">
           ` : `
-            <div class="w-28 h-28 rounded-full bg-yellow-200/10 flex items-center justify-center">
-              <i class="fas fa-compact-disc text-xl text-yellow-200"></i>
+            <div class="w-28 h-28 rounded-full bg-dark-accent flex items-center justify-center">
+              <i class="fas fa-compact-disc text-xl text-accent"></i>
             </div>
           `}
           <div>
@@ -433,13 +459,18 @@
       `;
       playlistContainer.appendChild(albumHeader);
 
+      if (currentPlaylist.length === 0) {
+        playlistContainer.innerHTML += '<p class="text-center text-gray-300">Tidak ada lagu ditemukan</p>';
+        return;
+      }
+
       currentPlaylist.forEach((song, index) => {
         const songElement = document.createElement('div');
         songElement.classList.add('card', 'p-2', 'fade-in', 'flex', 'items-center', 'space-x-2', 'cursor-pointer');
         songElement.style.animationDelay = `${index * 0.04}s`;
         songElement.dataset.songIndex = index;
         songElement.innerHTML = `
-          <div class="text-yellow-200 text-base">
+          <div class="text-accent text-base">
             <i class="fas fa-play-circle"></i>
           </div>
           <div class="flex-1">
@@ -455,18 +486,15 @@
       });
     }
 
-    // Mainkan Lagu dengan error handling
     async function playSong(song, index) {
       if (isSwitchingSong) return;
       isSwitchingSong = true;
 
-      // Cleanup audio
       audioPlayer.pause();
       audioPlayer.src = '';
       audioPlayer.currentTime = 0;
 
       try {
-        // Cek apakah file audio valid
         const isValidAudio = await checkAudioFile(song.mp3);
         if (!isValidAudio) {
           nowPlaying.innerHTML = `
@@ -480,22 +508,20 @@
         currentSongIndex = index;
 
         document.querySelectorAll('#playlist > div.card').forEach(el => {
-          el.classList.remove('bg-yellow-200/10');
+          el.classList.remove('bg-dark-accent');
         });
 
         const currentSongElement = document.querySelector(`[data-song-index="${currentSongIndex}"]`);
         if (currentSongElement) {
-          currentSongElement.classList.add('bg-yellow-200/10');
+          currentSongElement.classList.add('bg-dark-accent');
         }
 
-        // Coba putar audio dengan retry
         const success = await tryPlayAudio(audioPlayer, song.mp3);
         if (success) {
           isPlaying = true;
           updatePlayPauseButton();
           musicControls.classList.remove('hidden');
 
-          // Update nowPlaying hanya dengan info lagu
           nowPlaying.innerHTML = `
             <i class="fas fa-music mr-2"></i>
             ${song.artist} - ${song.title}
@@ -520,7 +546,6 @@
       }
     }
 
-    // Toggle Play/Pause
     async function togglePlayPause() {
       try {
         if (isPlaying) {
@@ -546,12 +571,36 @@
       }
     }
 
-    // Load Lirik
+    function toggleShuffle() {
+      isShuffle = !isShuffle;
+      shuffleBtn.style.color = isShuffle ? '#ffcc4d' : 'white';
+      if (isShuffle) {
+        shufflePlaylist();
+      } else {
+        currentPlaylist = [...originalPlaylist];
+        showAlbumSongs(getAlbumFromPath(currentPlaylist[0]?.mp3), searchInput.value);
+      }
+    }
+
+    function shufflePlaylist() {
+      for (let i = currentPlaylist.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [currentPlaylist[i], currentPlaylist[j]] = [currentPlaylist[j], currentPlaylist[i]];
+      }
+      showAlbumSongs(getAlbumFromPath(currentPlaylist[0]?.mp3), searchInput.value);
+    }
+
+    function toggleRepeat() {
+      isRepeat = !isRepeat;
+      repeatBtn.style.color = isRepeat ? '#ffcc4d' : 'white';
+      audioPlayer.loop = isRepeat;
+    }
+
     function loadLyrics(lyricPath) {
       if (!lyricsContainer) return;
       lyricsContainer.innerHTML = `
         <div class="text-center py-4">
-          <i class="fas fa-spinner loading text-base text-yellow-200 mb-2"></i>
+          <i class="fas fa-spinner loading text-base text-accent mb-2"></i>
           <p class="text-gray-300 text-xs">Memuat lirik...</p>
         </div>
       `;
@@ -566,7 +615,6 @@
         return;
       }
 
-      // Cek preload dulu
       if (preloadedLyrics[lyricPath]) {
         currentLyrics = preloadedLyrics[lyricPath].filter(line => 
           line && typeof line === 'object' && 
@@ -583,7 +631,6 @@
         return;
       }
 
-      // Fallback: Load manual
       const oldScript = document.getElementById('lyricScript');
       if (oldScript) oldScript.remove();
 
@@ -617,7 +664,6 @@
       document.body.appendChild(script);
     }
 
-    // Helper untuk error lirik
     function showLyricsError(message) {
       if (!lyricsContainer) return;
       lyricsContainer.innerHTML = `
@@ -628,7 +674,6 @@
       `;
     }
 
-    // Tampilkan Lirik
     function displayLyrics() {
       if (!lyricsContainer) return;
       lyricsContainer.innerHTML = '';
@@ -655,7 +700,6 @@
       updateLyricDisplay();
     }
 
-    // Auto Scroll Lirik
     function startAutoScroll() {
       currentLineIndex = -1;
       updateLyricDisplay();
@@ -735,7 +779,6 @@
       try {
         isPlaying = true;
         updatePlayPauseButton();
-        // Pastikan nowPlaying menunjukkan info lagu saat play
         if (currentPlaylist[currentSongIndex]) {
           nowPlaying.innerHTML = `
             <i class="fas fa-music mr-2"></i>
@@ -748,38 +791,33 @@
       }
     }
 
-    // Navigasi Lagu
     async function playNextSongManual() {
       if (isSwitchingSong) return;
-      if (currentPlaylist.length > 0 && currentSongIndex < currentPlaylist.length - 1) {
-        const nextIndex = currentSongIndex + 1;
-        const nextSong = currentPlaylist[nextIndex];
-        await playSong(nextSong, nextIndex);
-      } else if (currentPlaylist.length > 0) {
-        const firstSong = currentPlaylist[0];
-        await playSong(firstSong, 0);
+      let nextIndex = currentSongIndex + 1;
+      if (nextIndex >= currentPlaylist.length) {
+        nextIndex = 0;
       }
+      const nextSong = currentPlaylist[nextIndex];
+      await playSong(nextSong, nextIndex);
     }
 
     async function playPreviousSong() {
       if (isSwitchingSong) return;
-      if (currentPlaylist.length > 0 && currentSongIndex > 0) {
-        const prevIndex = currentSongIndex - 1;
-        const prevSong = currentPlaylist[prevIndex];
-        await playSong(prevSong, prevIndex);
-      } else if (currentPlaylist.length > 0) {
-        const lastIndex = currentPlaylist.length - 1;
-        const lastSong = currentPlaylist[lastIndex];
-        await playSong(lastSong, lastIndex);
+      let prevIndex = currentSongIndex - 1;
+      if (prevIndex < 0) {
+        prevIndex = currentPlaylist.length - 1;
       }
+      const prevSong = currentPlaylist[prevIndex];
+      await playSong(prevSong, prevIndex);
     }
 
     async function playNextSong() {
-      if (currentPlaylist.length > 0 && currentSongIndex < currentPlaylist.length - 1) {
-        const nextIndex = currentSongIndex + 1;
-        const nextSong = currentPlaylist[nextIndex];
-        await playSong(nextSong, nextIndex);
-      } else {
+      if (isRepeat) {
+        await playSong(currentPlaylist[currentSongIndex], currentSongIndex);
+        return;
+      }
+      let nextIndex = currentSongIndex + 1;
+      if (nextIndex >= currentPlaylist.length) {
         nowPlaying.innerHTML = `
           <i class="fas fa-check-circle mr-2 text-green-400"></i>
           Playlist selesai
@@ -787,12 +825,14 @@
         musicControls.classList.add('hidden');
         currentSongIndex = -1;
         document.querySelectorAll('#playlist > div.card').forEach(el => {
-          el.classList.remove('bg-yellow-200/10');
+          el.classList.remove('bg-dark-accent');
         });
+        return;
       }
+      const nextSong = currentPlaylist[nextIndex];
+      await playSong(nextSong, nextIndex);
     }
 
-    // Update Tampilan Lirik
     function updateLyricDisplay() {
       try {
         const lyricLines = document.querySelectorAll('.lyric-line');
@@ -813,7 +853,6 @@
       }
     }
 
-    // Scroll ke Baris Lirik Aktif
     function scrollToCurrentLine() {
       try {
         const currentLine = document.querySelector(`[data-index="${currentLineIndex}"]`);
@@ -828,7 +867,6 @@
       }
     }
 
-    // Debounce untuk mousemove
     function debounce(func, wait) {
       let timeout;
       return function (...args) {
@@ -837,7 +875,6 @@
       };
     }
 
-    // Parallax Efek
     const handleMouseMove = debounce((e) => {
       try {
         const x = (e.clientX / window.innerWidth) - 0.5;
@@ -850,9 +887,8 @@
       } catch (error) {
         console.error('Error pada parallax effect:', error);
       }
-    }, 15);
+    }, 30);
 
-    // Event Listeners
     if (backButton) {
       backButton.addEventListener('click', () => {
         try {
@@ -880,7 +916,7 @@
           audioPlayer.removeEventListener('play', handlePlay);
           audioPlayer.removeEventListener('loadedmetadata', updateDuration);
 
-          loadAlbums();
+          loadAlbums(searchInput.value);
         } catch (error) {
           console.error('Error saat kembali ke daftar album:', error);
         }
@@ -913,7 +949,17 @@
 
     window.addEventListener('mousemove', handleMouseMove);
 
-    // Inisialisasi
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value;
+        if (playlistContainer.classList.contains('hidden')) {
+          loadAlbums(query);
+        } else {
+          showAlbumSongs(getAlbumFromPath(currentPlaylist[0]?.mp3), query);
+        }
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       try {
         initParticles();
