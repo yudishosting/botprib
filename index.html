@@ -282,6 +282,7 @@
     let isSwitchingSong = false;
     let timerId = null;
     let timerEndTime = null;
+    let isUserScrolling = false;
 
     function getAlbumFromPath(song) {
       return song.folder || 'unknown';
@@ -661,6 +662,7 @@
           <p class="text-gray-400 text-xs">Memuat lirik...</p>
         </div>
       `;
+      lyricsContainer.scrollTop = 0; // Mulai dari atas
 
       if (!lyricPath) {
         lyricsContainer.innerHTML = `
@@ -729,6 +731,7 @@
           <p class="text-gray-400 text-xs">${message}</p>
         </div>
       `;
+      lyricsContainer.scrollTop = 0; // Mulai dari atas
     }
 
     function displayLyrics() {
@@ -754,6 +757,7 @@
       });
 
       currentLineIndex = -1;
+      lyricsContainer.scrollTop = 0; // Mulai dari atas
       updateLyricDisplay();
     }
 
@@ -772,6 +776,16 @@
       audioPlayer.addEventListener('pause', handlePause);
       audioPlayer.addEventListener('play', handlePlay);
       audioPlayer.addEventListener('loadedmetadata', updateDuration);
+
+      // Deteksi scroll manual
+      let scrollTimeout;
+      lyricsContainer.addEventListener('scroll', () => {
+        isUserScrolling = true;
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          isUserScrolling = false;
+        }, 2000); // Kembali ke auto-scroll setelah 2 detik tidak scroll
+      });
     }
 
     function handleTimeUpdate() {
@@ -789,7 +803,7 @@
         if (newLineIndex !== currentLineIndex) {
           currentLineIndex = newLineIndex;
           updateLyricDisplay();
-          if (newLineIndex >= 0) {
+          if (newLineIndex >= 0 && !isUserScrolling) {
             scrollToCurrentLine();
           }
         }
@@ -816,7 +830,7 @@
         updatePlayPauseButton();
         currentLineIndex = -1;
         updateLyricDisplay();
-        lyricsContainer.scrollTop = 0;
+        lyricsContainer.scrollTop = 0; // Kembali ke atas saat lagu selesai
         playNextSong();
       } catch (error) {
         console.error('Error saat lagu selesai:', error);
@@ -880,6 +894,7 @@
         document.querySelectorAll('#songList > div.card').forEach(el => {
           el.classList.remove('bg-dark-accent');
         });
+        lyricsContainer.scrollTop = 0; // Kembali ke atas saat playlist selesai
         return;
       }
       const nextSong = currentPlaylist[nextIndex];
@@ -913,15 +928,12 @@
           const containerHeight = lyricsContainer.offsetHeight;
           const lineTop = currentLine.offsetTop;
           const lineHeight = currentLine.offsetHeight;
-          const scrollTop = lyricsContainer.scrollTop;
           const centerOffset = containerHeight / 2 - lineHeight / 2;
 
-          if (lineTop < scrollTop || lineTop > scrollTop + containerHeight - lineHeight) {
-            lyricsContainer.scrollTo({
-              top: lineTop - centerOffset,
-              behavior: 'smooth'
-            });
-          }
+          lyricsContainer.scrollTo({
+            top: lineTop - centerOffset,
+            behavior: 'smooth'
+          });
         }
       } catch (error) {
         console.error('Error saat scroll lirik:', error);
@@ -970,6 +982,7 @@
           currentPlaylist = [];
           currentSongIndex = -1;
           songList.innerHTML = '';
+          isUserScrolling = false;
 
           if (timerId) {
             clearTimeout(timerId);
