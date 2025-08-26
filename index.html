@@ -18,8 +18,6 @@
         Jelajahi Koleksi Musik
       </div>
 
-      <input type="text" id="searchInput" placeholder="Cari album atau lagu..." class="mb-6">
-
       <button id="backButton" class="hidden mb-6 px-4 py-2 bg-accent text-dark rounded-lg hover:bg-accent-hover transition-all duration-300 font-medium text-sm">
         <i class="fas fa-arrow-left mr-2"></i>
         Kembali
@@ -236,7 +234,6 @@
     const volumeSlider = document.getElementById('volumeSlider');
     const mainContent = document.getElementById('mainContent');
     const startPrompt = document.getElementById('startPrompt');
-    const searchInput = document.getElementById('searchInput');
     const shuffleBtn = document.getElementById('shuffleBtn');
     const repeatBtn = document.getElementById('repeatBtn');
 
@@ -324,14 +321,15 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const particleCount = 15;
+      const particleCount = 12; // Reduced for performance
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          radius: Math.random() * 1 + 0.5,
-          speed: Math.random() * 0.2 + 0.1
+          radius: Math.random() * 1.5 + 0.5,
+          speed: Math.random() * 0.15 + 0.05,
+          opacity: Math.random() * 0.3 + 0.1
         });
       }
 
@@ -340,7 +338,7 @@
         particles.forEach(p => {
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(255, 204, 77, 0.15)';
+          ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
           ctx.fill();
           p.y -= p.speed;
           if (p.y < 0) p.y = canvas.height;
@@ -371,14 +369,10 @@
       return Object.values(albumsData).filter(album => album.name);
     }
 
-    function loadAlbums(searchQuery = '') {
+    function loadAlbums() {
       if (!albumList) return;
       albumList.innerHTML = '';
-      let albums = getAlbums();
-
-      if (searchQuery) {
-        albums = albums.filter(album => album.name.toLowerCase().includes(searchQuery.toLowerCase()));
-      }
+      const albums = getAlbums();
 
       albumList.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
       albumList.style.gridTemplateRows = 'auto';
@@ -396,11 +390,11 @@
           ${albumData.photo ? `
             <div class="mb-2 flex justify-center">
               <img src="${albumData.photo}" alt="${albumData.name}" loading="lazy"
-                   class="w-24 h-24 rounded-full object-cover border border-accent">
+                   class="w-24 h-24 rounded-lg object-cover border border-accent">
             </div>
           ` : `
             <div class="mb-2 flex justify-center">
-              <div class="no-image w-24 h-24 rounded-full bg-dark-accent flex items-center justify-center">
+              <div class="no-image w-24 h-24 rounded-lg bg-dark-accent flex items-center justify-center">
                 <i class="fas fa-compact-disc text-xl text-accent"></i>
               </div>
             </div>
@@ -408,7 +402,7 @@
           <h3 class="text-base font-medium text-white text-center">${albumData.name}</h3>
           <p class="text-gray-300 text-xs text-center">${albumData.songCount} lagu</p>
         `;
-        albumElement.addEventListener('click', () => showAlbumSongs(albumData.name.toLowerCase(), searchQuery));
+        albumElement.addEventListener('click', () => showAlbumSongs(albumData.name.toLowerCase()));
         albumList.appendChild(albumElement);
       });
 
@@ -416,7 +410,7 @@
       lyricsContainer.classList.add('hidden');
     }
 
-    function showAlbumSongs(album, searchQuery = '') {
+    function showAlbumSongs(album) {
       if (!albumList || !playlistContainer || !backButton || !startPrompt || !lyricsContainer) return;
       
       albumList.classList.add('hidden');
@@ -426,14 +420,7 @@
       lyricsContainer.classList.remove('hidden');
       playlistContainer.innerHTML = '';
 
-      let filteredSongs = playlist.filter(song => getAlbumFromPath(song.mp3) === album);
-      if (searchQuery) {
-        filteredSongs = filteredSongs.filter(song => 
-          song.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          song.artist.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-
+      const filteredSongs = playlist.filter(song => getAlbumFromPath(song.mp3) === album);
       currentPlaylist = filteredSongs;
       originalPlaylist = [...currentPlaylist];
       currentSongIndex = -1;
@@ -445,9 +432,9 @@
         <div class="flex flex-col items-center space-y-2">
           ${albumPhoto ? `
             <img src="${albumPhoto}" alt="${album}" loading="lazy"
-                 class="w-28 h-28 rounded-full object-cover border border-accent">
+                 class="w-28 h-28 rounded-lg object-cover border border-accent">
           ` : `
-            <div class="w-28 h-28 rounded-full bg-dark-accent flex items-center justify-center">
+            <div class="w-28 h-28 rounded-lg bg-dark-accent flex items-center justify-center">
               <i class="fas fa-compact-disc text-xl text-accent"></i>
             </div>
           `}
@@ -573,12 +560,12 @@
 
     function toggleShuffle() {
       isShuffle = !isShuffle;
-      shuffleBtn.style.color = isShuffle ? '#ffcc4d' : 'white';
+      shuffleBtn.style.color = isShuffle ? '#4db6ff' : 'white';
       if (isShuffle) {
         shufflePlaylist();
       } else {
         currentPlaylist = [...originalPlaylist];
-        showAlbumSongs(getAlbumFromPath(currentPlaylist[0]?.mp3), searchInput.value);
+        showAlbumSongs(getAlbumFromPath(currentPlaylist[0]?.mp3));
       }
     }
 
@@ -587,12 +574,12 @@
         const j = Math.floor(Math.random() * (i + 1));
         [currentPlaylist[i], currentPlaylist[j]] = [currentPlaylist[j], currentPlaylist[i]];
       }
-      showAlbumSongs(getAlbumFromPath(currentPlaylist[0]?.mp3), searchInput.value);
+      showAlbumSongs(getAlbumFromPath(currentPlaylist[0]?.mp3));
     }
 
     function toggleRepeat() {
       isRepeat = !isRepeat;
-      repeatBtn.style.color = isRepeat ? '#ffcc4d' : 'white';
+      repeatBtn.style.color = isRepeat ? '#4db6ff' : 'white';
       audioPlayer.loop = isRepeat;
     }
 
@@ -879,15 +866,15 @@
       try {
         const x = (e.clientX / window.innerWidth) - 0.5;
         const y = (e.clientY / window.innerHeight) - 0.5;
-        mainContent.style.transform = `rotateX(${y * 2}deg) rotateY(${x * -2}deg) translateZ(0)`;
+        mainContent.style.transform = `rotateX(${y * 1.5}deg) rotateY(${x * -1.5}deg) translateZ(0)`;
         const albumCards = document.querySelectorAll('.album-card');
         albumCards.forEach(card => {
-          card.style.transform = `translate(${x * 8}px, ${y * 8}px) translateZ(8px)`;
+          card.style.transform = `translate(${x * 6}px, ${y * 6}px) translateZ(6px)`;
         });
       } catch (error) {
         console.error('Error pada parallax effect:', error);
       }
-    }, 30);
+    }, 50); // Increased debounce for better performance
 
     if (backButton) {
       backButton.addEventListener('click', () => {
@@ -916,7 +903,7 @@
           audioPlayer.removeEventListener('play', handlePlay);
           audioPlayer.removeEventListener('loadedmetadata', updateDuration);
 
-          loadAlbums(searchInput.value);
+          loadAlbums();
         } catch (error) {
           console.error('Error saat kembali ke daftar album:', error);
         }
@@ -948,17 +935,6 @@
     }
 
     window.addEventListener('mousemove', handleMouseMove);
-
-    if (searchInput) {
-      searchInput.addEventListener('input', () => {
-        const query = searchInput.value;
-        if (playlistContainer.classList.contains('hidden')) {
-          loadAlbums(query);
-        } else {
-          showAlbumSongs(getAlbumFromPath(currentPlaylist[0]?.mp3), query);
-        }
-      });
-    }
 
     document.addEventListener('DOMContentLoaded', () => {
       try {
