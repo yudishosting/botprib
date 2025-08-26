@@ -25,23 +25,7 @@
 
       <div id="albumList" class="grid-responsive"></div>
 
-      <div id="playlist" class="hidden">
-        <div id="timerContainer" class="timer-container mb-6 flex items-center justify-center space-x-3">
-          <i class="fas fa-clock text-accent"></i>
-          <select id="sleepTimer" class="timer-select">
-            <option value="0">Timer Tidur</option>
-            <option value="10">10 Menit</option>
-            <option value="30">30 Menit</option>
-            <option value="60">1 Jam</option>
-            <option value="custom">Custom</option>
-          </select>
-          <div class="relative">
-            <input type="number" id="customTimerInput" class="timer-input hidden" min="1" max="999" placeholder="Menit" />
-            <span id="timerError" class="timer-error hidden text-xs text-red-400 absolute -bottom-5 left-0">Masukkan angka 1-999</span>
-          </div>
-          <span id="timerCountdown" class="timer-countdown text-xs text-accent hidden">Sisa: 00:00</span>
-        </div>
-      </div>
+      <div id="playlist" class="hidden"></div>
 
       <audio id="audioPlayer" preload="auto" class="hidden"></audio>
 
@@ -70,6 +54,18 @@
             <button onclick="playNextSongManual()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Selanjutnya">
               <i class="fas fa-step-forward text-base"></i>
             </button>
+
+            <div class="timer-container">
+              <i class="fas fa-clock text-gray-300"></i>
+              <select id="sleepTimer" class="timer-select">
+                <option value="0">Timer Tidur</option>
+                <option value="15">15 Menit</option>
+                <option value="30">30 Menit</option>
+                <option value="45">45 Menit</option>
+                <option value="60">1 Jam</option>
+              </select>
+              <span id="timerCountdown" class="text-xs text-gray-300 ml-2 hidden">Sisa: 00:00</span>
+            </div>
 
             <div class="volume-container">
               <i class="fas fa-volume-up text-gray-300"></i>
@@ -244,8 +240,6 @@
     const startPrompt = document.getElementById('startPrompt');
     const sleepTimer = document.getElementById('sleepTimer');
     const timerCountdown = document.getElementById('timerCountdown');
-    const customTimerInput = document.getElementById('customTimerInput');
-    const timerError = document.getElementById('timerError');
 
     // State
     let currentLyrics = [];
@@ -260,20 +254,17 @@
 
     function getAlbumFromPath(mp3Path) {
       const parts = mp3Path.split('/');
-      return parts.length > 2 ? parts[2] : 'unknown';
+      return parts.length > 1 ? parts[1] : 'unknown';
     }
 
     async function checkAudioFile(url) {
       try {
-        console.log(`Checking audio file: ${url}`);
         const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
         if (!response.ok) {
-          throw new Error(`File ${url} tidak ditemukan (status: ${response.status})`);
+          throw new Error(`File ${url} tidak ditemukan atau tidak dapat diakses`);
         }
         const contentType = response.headers.get('content-type');
-        const canPlay = audioPlayer.canPlayType(contentType);
-        console.log(`Content-Type: ${contentType}, Can play: ${canPlay}`);
-        return canPlay !== '';
+        return audioPlayer.canPlayType(contentType) !== '';
       } catch (error) {
         console.error(`Pengecekan audio gagal untuk ${url}:`, error);
         return false;
@@ -283,16 +274,13 @@
     async function tryPlayAudio(audio, url, maxRetries = 3, retryDelay = 500) {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          console.log(`Attempt ${attempt}: Playing ${url}`);
           audio.src = url;
           audio.load();
           await audio.play();
-          console.log(`Successfully played: ${url}`);
           return true;
         } catch (error) {
           console.warn(`Percobaan ${attempt} gagal memutar ${url}:`, error);
           if (attempt === maxRetries) {
-            console.error(`Failed to play ${url} after ${maxRetries} attempts`);
             return false;
           }
           await new Promise(resolve => setTimeout(resolve, retryDelay));
@@ -310,7 +298,6 @@
           if (window.lyrics && Array.isArray(window.lyrics)) {
             preloadedLyrics[path] = window.lyrics;
             window.lyrics = null;
-            console.log(`Preloaded lyrics: ${path}`);
           }
         };
         script.onerror = () => {
@@ -351,8 +338,6 @@
       }
       timerCountdown.classList.add('hidden');
       timerEndTime = null;
-      customTimerInput.classList.add('hidden');
-      timerError.classList.add('hidden');
 
       if (minutes > 0) {
         const milliseconds = minutes * 60 * 1000;
@@ -373,8 +358,6 @@
           sleepTimer.value = "0";
           timerCountdown.classList.add('hidden');
           timerEndTime = null;
-          customTimerInput.classList.add('hidden');
-          timerError.classList.add('hidden');
         }, milliseconds);
         timerId = setInterval(updateTimerCountdown, 1000);
         updateTimerCountdown();
@@ -391,15 +374,15 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const particleCount = 8;
+      const particleCount = 10; // Reduced further for smoothness
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          radius: Math.random() * 1 + 0.2,
-          speed: Math.random() * 0.07 + 0.02,
-          opacity: Math.random() * 0.12 + 0.05
+          radius: Math.random() * 1.2 + 0.3,
+          speed: Math.random() * 0.1 + 0.03,
+          opacity: Math.random() * 0.2 + 0.05
         });
       }
 
@@ -436,14 +419,11 @@
         }
         albumsData[album].songCount++;
       });
-      return Object.values(albumsData).filter(album => album.name !== 'unknown');
+      return Object.values(albumsData).filter(album => album.name);
     }
 
     function loadAlbums() {
-      if (!albumList) {
-        console.error('albumList element not found');
-        return;
-      }
+      if (!albumList) return;
       albumList.innerHTML = '';
       const albums = getAlbums();
 
@@ -452,23 +432,22 @@
 
       if (albums.length === 0) {
         albumList.innerHTML = '<p class="text-center text-gray-300">Tidak ada album ditemukan</p>';
-        console.warn('No albums found');
         return;
       }
 
       albums.forEach((albumData, index) => {
         const albumElement = document.createElement('div');
         albumElement.classList.add('album-card', 'fade-in');
-        albumElement.style.animationDelay = `${index * 0.05}s`;
+        albumElement.style.animationDelay = `${index * 0.06}s`;
         albumElement.innerHTML = `
           ${albumData.photo ? `
             <div class="mb-2 flex justify-center">
               <img src="${albumData.photo}" alt="${albumData.name}" loading="lazy"
-                   class="w-24 h-24 rounded-lg object-cover border border-accent shimmer">
+                   class="w-24 h-24 rounded-lg object-cover border border-accent">
             </div>
           ` : `
             <div class="mb-2 flex justify-center">
-              <div class="no-image w-24 h-24 rounded-lg bg-dark-accent flex items-center justify-center shimmer">
+              <div class="no-image w-24 h-24 rounded-lg bg-dark-accent flex items-center justify-center">
                 <i class="fas fa-compact-disc text-xl text-accent"></i>
               </div>
             </div>
@@ -482,15 +461,10 @@
 
       startPrompt.classList.remove('hidden');
       lyricsContainer.classList.add('hidden');
-      playlistContainer.classList.add('hidden');
-      console.log('Albums loaded:', albums);
     }
 
     function showAlbumSongs(album) {
-      if (!albumList || !playlistContainer || !backButton || !startPrompt || !lyricsContainer) {
-        console.error('Required DOM elements missing');
-        return;
-      }
+      if (!albumList || !playlistContainer || !backButton || !startPrompt || !lyricsContainer) return;
       
       albumList.classList.add('hidden');
       playlistContainer.classList.remove('hidden');
@@ -510,9 +484,9 @@
         <div class="flex flex-col items-center space-y-2">
           ${albumPhoto ? `
             <img src="${albumPhoto}" alt="${album}" loading="lazy"
-                 class="w-28 h-28 rounded-lg object-cover border border-accent shimmer">
+                 class="w-28 h-28 rounded-lg object-cover border border-accent">
           ` : `
-            <div class="w-28 h-28 rounded-lg bg-dark-accent flex items-center justify-center shimmer">
+            <div class="w-28 h-28 rounded-lg bg-dark-accent flex items-center justify-center">
               <i class="fas fa-compact-disc text-xl text-accent"></i>
             </div>
           `}
@@ -524,30 +498,22 @@
       `;
       playlistContainer.appendChild(albumHeader);
 
-      playlistContainer.appendChild(document.getElementById('timerContainer'));
-
       if (currentPlaylist.length === 0) {
-        playlistContainer.innerHTML += `
-          <div class="empty-state p-4 text-center">
-            <i class="fas fa-exclamation-triangle text-base text-orange-400 mb-2"></i>
-            <p class="text-gray-300 text-xs">Tidak ada lagu ditemukan untuk album ${album}</p>
-          </div>
-        `;
-        console.warn(`No songs found for album: ${album}`);
+        playlistContainer.innerHTML += '<p class="text-center text-gray-300">Tidak ada lagu ditemukan</p>';
         return;
       }
 
       currentPlaylist.forEach((song, index) => {
         const songElement = document.createElement('div');
-        songElement.classList.add('card', 'p-3', 'fade-in', 'flex', 'items-center', 'space-x-3', 'cursor-pointer');
-        songElement.style.animationDelay = `${index * 0.02}s`;
+        songElement.classList.add('card', 'p-2', 'fade-in', 'flex', 'items-center', 'space-x-2', 'cursor-pointer');
+        songElement.style.animationDelay = `${index * 0.03}s`;
         songElement.dataset.songIndex = index;
         songElement.innerHTML = `
           <div class="text-accent text-base">
             <i class="fas fa-play-circle"></i>
           </div>
           <div class="flex-1">
-            <h4 class="text-sm font-medium text-white">${song.title}</h4>
+            <h4 class="text-xs font-medium text-white">${song.title}</h4>
             <p class="text-gray-300 text-xs">${song.artist}</p>
           </div>
           <div class="text-gray-400 text-xs">
@@ -557,8 +523,6 @@
         songElement.addEventListener('click', () => playSong(song, index));
         playlistContainer.appendChild(songElement);
       });
-
-      console.log(`Playlist loaded for album: ${album}, songs:`, currentPlaylist);
     }
 
     async function playSong(song, index) {
@@ -576,7 +540,6 @@
             <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
             File audio tidak valid: ${song.title}
           `;
-          console.error(`Invalid audio file: ${song.mp3}`);
           isSwitchingSong = false;
           return;
         }
@@ -610,7 +573,6 @@
             <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
             Tidak dapat memutar: ${song.title}
           `;
-          console.error(`Failed to play: ${song.mp3}`);
         }
       } catch (error) {
         console.error('Error saat memutar lagu:', error);
@@ -664,7 +626,6 @@
             <p class="text-gray-300 text-xs">Tidak ada lirik</p>
           </div>
         `;
-        console.warn('No lyric path provided');
         return;
       }
 
@@ -928,15 +889,15 @@
       try {
         const x = (e.clientX / window.innerWidth) - 0.5;
         const y = (e.clientY / window.innerHeight) - 0.5;
-        mainContent.style.transform = `rotateX(${y * 1}deg) rotateY(${x * -1}deg) translateZ(0)`;
+        mainContent.style.transform = `rotateX(${y * 1.2}deg) rotateY(${x * -1.2}deg) translateZ(0)`;
         const albumCards = document.querySelectorAll('.album-card');
         albumCards.forEach(card => {
-          card.style.transform = `translate(${x * 4}px, ${y * 4}px) translateZ(4px)`;
+          card.style.transform = `translate(${x * 5}px, ${y * 5}px) translateZ(5px)`;
         });
       } catch (error) {
         console.error('Error pada parallax effect:', error);
       }
-    }, 80);
+    }, 60);
 
     if (backButton) {
       backButton.addEventListener('click', () => {
@@ -966,8 +927,6 @@
             timerEndTime = null;
             timerCountdown.classList.add('hidden');
             sleepTimer.value = "0";
-            customTimerInput.classList.add('hidden');
-            timerError.classList.add('hidden');
           }
 
           audioPlayer.removeEventListener('timeupdate', handleTimeUpdate);
@@ -1007,35 +966,13 @@
       });
     }
 
-    if (sleepTimer && customTimerInput && timerError) {
+    if (sleepTimer) {
       sleepTimer.addEventListener('change', () => {
         try {
-          timerError.classList.add('hidden');
-          if (sleepTimer.value === "custom") {
-            customTimerInput.classList.remove('hidden');
-            customTimerInput.focus();
-          } else {
-            customTimerInput.classList.add('hidden');
-            const minutes = parseInt(sleepTimer.value);
-            setSleepTimer(minutes);
-          }
+          const minutes = parseInt(sleepTimer.value);
+          setSleepTimer(minutes);
         } catch (error) {
           console.error('Error saat mengatur timer tidur:', error);
-        }
-      });
-
-      customTimerInput.addEventListener('input', () => {
-        try {
-          const minutes = parseInt(customTimerInput.value);
-          if (isNaN(minutes) || minutes < 1 || minutes > 999) {
-            timerError.classList.remove('hidden');
-            return;
-          }
-          timerError.classList.add('hidden');
-          setSleepTimer(minutes);
-          sleepTimer.value = "custom";
-        } catch (error) {
-          console.error('Error saat mengatur timer custom:', error);
         }
       });
     }
