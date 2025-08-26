@@ -461,7 +461,7 @@
           `;
           artistSection.appendChild(artistSubHeader);
 
-          // Tambahkan lagu-lagu untuk artis ini, hanya tampilkan nama artis
+          // Tambahkan lagu-lagu untuk artis ini, hanya tampilkan nama artis untuk Random
           songsByArtist[artistName].forEach((song, songIndex) => {
             const globalIndex = currentPlaylist.findIndex(s => s === song);
             const songElement = document.createElement('div');
@@ -474,6 +474,7 @@
               </div>
               <div class="flex-1">
                 <h4 class="text-xs font-medium text-white">${song.artist}</h4>
+                <p class="text-gray-300 text-xs" style="display: none;">${song.title}</p> <!-- Judul disembunyikan -->
               </div>
               <div class="text-gray-400 text-xs">
                 ${globalIndex + 1}/${currentPlaylist.length}
@@ -486,7 +487,7 @@
           playlistContainer.appendChild(artistSection);
         });
       } else {
-        // Tampilan lagu normal untuk artis lain
+        // Tampilan lagu normal untuk artis lain (tidak Random)
         currentPlaylist.forEach((song, index) => {
           const songElement = document.createElement('div');
           songElement.classList.add('card', 'p-2', 'fade-in', 'flex', 'items-center', 'space-x-2', 'cursor-pointer');
