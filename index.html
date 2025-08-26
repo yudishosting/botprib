@@ -99,126 +99,144 @@
         title: "Bergema Sampai Selamanya",
         mp3: "music/random/bergema.mp3",
         lyric: "lyrics/random/bergema.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg",
+        folder: "Feast"
       },
       {
         artist: "Nadhif Basalamah",
         title: "Penjaga Hati",
         mp3: "music/random/penjagahati.mp3",
         lyric: "lyrics/random/penjagahati.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg",
+        folder: "Random"
       },
       {
         artist: "Kendis",
         title: "ours to keep",
         mp3: "music/random/keep.mp3",
         lyric: "lyrics/random/keep.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg",
+        folder: "Random"
       },
       {
         artist: "Matty Healy",
         title: "About You",
         mp3: "music/random/aboutyou.mp3",
         lyric: "lyrics/random/aboutyou.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg",
+        folder: "Feast"
       },
       {
         artist: "Dougy Mandagi",
         title: "Sweet disposition",
         mp3: "music/random/disposition.mp3",
         lyric: "lyrics/random/disposition.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg",
+        folder: "Feast"
       },
       {
         artist: "One direction",
         title: "where we are",
         mp3: "music/random/weare.mp3",
         lyric: "lyrics/random/weare.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg",
+        folder: "Feast"
       },
       {
         artist: "Aris Lesmana",
         title: "Mangu",
         mp3: "music/random/mangu.mp3",
         lyric: "lyrics/random/mangu.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "/images/random/random.jpg",
+        folder: "Random"
       },
       {
         artist: "Hindia",
         title: "Everything U Are",
         mp3: "music/hindia/everything.mp3",
         lyric: "lyrics/hindia/everything.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg",
+        folder: "Hindia"
       },
       {
         artist: "Hindia",
         title: "Ramai Sepi Bersama",
         mp3: "music/hindia/bersama.mp3",
         lyric: "lyrics/hindia/bersama.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg",
+        folder: "Hindia"
       },
       {
         artist: "Hindia",
         title: "Semua Lagu Cinta Terdengar Sama",
         mp3: "music/hindia/sama.mp3",
         lyric: "lyrics/hindia/sama.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg",
+        folder: "Hindia"
       },
       {
         artist: "Hindia",
         title: "Rumah ke rumah",
         mp3: "music/hindia/rumah.mp3",
         lyric: "lyrics/hindia/rumah.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg",
+        folder: "Hindia"
       },
       {
         artist: "Hindia",
         title: "Evaluasi",
         mp3: "music/hindia/evaluasi.mp3",
         lyric: "lyrics/hindia/evaluasi.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg",
+        folder: "Hindia"
       },
       {
         artist: "Hindia",
         title: "Cincin",
         mp3: "music/hindia/cincin.mp3",
         lyric: "lyrics/hindia/cincin.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg",
+        folder: "Hindia"
       },
       {
         artist: "Hindia",
         title: "Kita Kesana",
         mp3: "music/hindia/kitakesana.mp3",
         lyric: "lyrics/hindia/kitakesana.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg",
+        folder: "Hindia"
       },
       {
         artist: "Hindia",
         title: "Rasakan Nikmatnya Hidup",
         mp3: "music/hindia/nikmatnya.mp3",
         lyric: "lyrics/hindia/nikmatnya.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "/images/hindia/hindia.jpg",
+        folder: "Hindia"
       },
       {
         artist: "Feast",
         title: "Feast",
         mp3: "music/nina/feast.mp3",
         lyric: "lyrics/nina/feast.js",
-        artistPhoto: "/images/nina/nina.jpg"
+        artistPhoto: "/images/nina/nina.jpg",
+        folder: "Feast"
       },
       {
         artist: "Feast",
         title: "Tarot",
         mp3: "music/nina/tarot.mp3",
         lyric: "lyrics/nina/tarot.js",
-        artistPhoto: "/images/nina/nina.jpg"
+        artistPhoto: "/images/nina/nina.jpg",
+        folder: "Feast"
       },
       {
         artist: "Feast",
         title: "o,Tuan",
         mp3: "music/nina/otuan.mp3",
         lyric: "lyrics/nina/otuan.js",
-        artistPhoto: "/images/nina/nina.jpg"
+        artistPhoto: "/images/nina/nina.jpg",
+        folder: "Feast"
       }
     ];
 
@@ -256,9 +274,9 @@
     let timerId = null;
     let timerEndTime = null;
 
-    function getAlbumFromPath(mp3Path) {
-      const parts = mp3Path.split('/');
-      return parts.length > 1 ? parts[1] : 'unknown';
+    // Fungsi untuk mendapatkan nama album dari properti 'folder'
+    function getAlbumFromPath(song) {
+        return song.folder || 'unknown';
     }
 
     async function checkAudioFile(url) {
@@ -422,19 +440,20 @@
       });
     }
 
+    // Fungsi yang dimodifikasi untuk membaca properti 'folder'
     function getAlbums() {
       const albumsData = {};
       playlist.forEach(song => {
-        const album = getAlbumFromPath(song.mp3);
-        if (!albumsData[album]) {
-          albumsData[album] = {
-            name: album.charAt(0).toUpperCase() + album.slice(1),
+        const folderName = getAlbumFromPath(song);
+        if (!albumsData[folderName]) {
+          albumsData[folderName] = {
+            name: folderName,
             songCount: 0,
             photo: song.artistPhoto,
             artist: song.artist
           };
         }
-        albumsData[album].songCount++;
+        albumsData[folderName].songCount++;
       });
       return Object.values(albumsData).filter(album => album.name);
     }
@@ -472,7 +491,7 @@
           <h3 class="text-base font-medium text-white text-center">${albumData.name}</h3>
           <p class="text-gray-300 text-xs text-center">${albumData.songCount} lagu</p>
         `;
-        albumElement.addEventListener('click', () => showAlbumSongs(albumData.name.toLowerCase()));
+        albumElement.addEventListener('click', () => showAlbumSongs(albumData.name));
         albumList.appendChild(albumElement);
       });
 
@@ -492,7 +511,7 @@
       lyricsContainer.classList.remove('hidden');
       songListContainer.innerHTML = '';
 
-      const filteredSongs = playlist.filter(song => getAlbumFromPath(song.mp3) === album);
+      const filteredSongs = playlist.filter(song => getAlbumFromPath(song) === album);
       currentPlaylist = filteredSongs;
       currentSongIndex = -1;
 
