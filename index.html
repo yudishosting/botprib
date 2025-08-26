@@ -39,9 +39,9 @@
               <option value="custom">Custom</option>
             </select>
             <div id="customTimerInput" class="hidden flex items-center gap-2">
-              <input type="number" id="customMinutes" min="1" max="180" placeholder="Menit" class="timer-input">
-              <button id="setCustomTimer" class="px-2 py-1 bg-accent text-dark rounded-md hover:bg-accent-hover transition-colors duration-200 text-xs">
-                Set
+              <input type="number" id="customMinutes" min="1" max="180" placeholder="Masukkan menit (1-180)" class="timer-input">
+              <button id="setCustomTimer" class="px-3 py-1 bg-accent text-dark rounded-md hover:bg-accent-hover transition-colors duration-200 text-sm font-medium">
+                Set Timer
               </button>
             </div>
             <span id="timerCountdown" class="text-xs text-gray-300 hidden">Sisa: 00:00</span>
@@ -361,6 +361,8 @@
         clearInterval(timerId);
         timerId = null;
         timerEndTime = null;
+        sleepTimer.value = "0";
+        customTimerInput.classList.add('hidden');
         return;
       }
       const remainingSeconds = Math.floor(remainingMs / 1000);
@@ -386,17 +388,16 @@
           updatePlayPauseButton();
           nowPlaying.innerHTML = `
             <i class="fas fa-moon mr-2 text-accent"></i>
-            Timer tidur selesai
+            ${currentPlaylist[currentSongIndex]?.artist || 'Artis'} - ${currentPlaylist[currentSongIndex]?.title || 'Judul'}
+            <span class="text-gray-300 text-xs">(${currentSongIndex + 1}/${currentPlaylist.length})</span>
           `;
-          musicControls.classList.add('hidden');
-          currentSongIndex = -1;
-          document.querySelectorAll('#songList > div.card').forEach(el => {
-            el.classList.remove('bg-dark-accent');
-          });
+          timerCountdown.classList.add('hidden');
+          clearTimeout(timerId);
+          clearInterval(timerId);
+          timerId = null;
+          timerEndTime = null;
           sleepTimer.value = "0";
           customTimerInput.classList.add('hidden');
-          timerCountdown.classList.add('hidden');
-          timerEndTime = null;
         }, milliseconds);
         timerId = setInterval(updateTimerCountdown, 1000);
         updateTimerCountdown();
@@ -637,6 +638,11 @@
         } else {
           await audioPlayer.play();
           isPlaying = true;
+          if (!timerEndTime) {
+            sleepTimer.value = "0";
+            customTimerInput.classList.add('hidden');
+            timerCountdown.classList.add('hidden');
+          }
         }
         updatePlayPauseButton();
       } catch (error) {
