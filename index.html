@@ -26,19 +26,20 @@
       <div id="albumList" class="grid-responsive"></div>
 
       <div id="playlist" class="hidden">
-        <div id="timerContainer" class="timer-container mb-4 flex items-center justify-center space-x-2">
-          <i class="fas fa-clock text-gray-300"></i>
+        <div id="timerContainer" class="timer-container mb-6 flex items-center justify-center space-x-3">
+          <i class="fas fa-clock text-accent"></i>
           <select id="sleepTimer" class="timer-select">
             <option value="0">Timer Tidur</option>
-            <option value="5">5 Menit</option>
             <option value="10">10 Menit</option>
-            <option value="15">15 Menit</option>
             <option value="30">30 Menit</option>
             <option value="60">1 Jam</option>
             <option value="custom">Custom</option>
           </select>
-          <input type="number" id="customTimerInput" class="timer-input hidden" min="1" placeholder="Menit" />
-          <span id="timerCountdown" class="text-xs text-gray-300 hidden">Sisa: 00:00</span>
+          <div class="relative">
+            <input type="number" id="customTimerInput" class="timer-input hidden" min="1" max="999" placeholder="Menit" />
+            <span id="timerError" class="timer-error hidden text-xs text-red-400 absolute -bottom-5 left-0">Masukkan angka 1-999</span>
+          </div>
+          <span id="timerCountdown" class="timer-countdown text-xs text-accent hidden">Sisa: 00:00</span>
         </div>
       </div>
 
@@ -244,6 +245,7 @@
     const sleepTimer = document.getElementById('sleepTimer');
     const timerCountdown = document.getElementById('timerCountdown');
     const customTimerInput = document.getElementById('customTimerInput');
+    const timerError = document.getElementById('timerError');
 
     // State
     let currentLyrics = [];
@@ -258,17 +260,20 @@
 
     function getAlbumFromPath(mp3Path) {
       const parts = mp3Path.split('/');
-      return parts.length > 1 ? parts[1] : 'unknown';
+      return parts.length > 2 ? parts[2] : 'unknown';
     }
 
     async function checkAudioFile(url) {
       try {
+        console.log(`Checking audio file: ${url}`);
         const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
         if (!response.ok) {
-          throw new Error(`File ${url} tidak ditemukan atau tidak dapat diakses`);
+          throw new Error(`File ${url} tidak ditemukan (status: ${response.status})`);
         }
         const contentType = response.headers.get('content-type');
-        return audioPlayer.canPlayType(contentType) !== '';
+        const canPlay = audioPlayer.canPlayType(contentType);
+        console.log(`Content-Type: ${contentType}, Can play: ${canPlay}`);
+        return canPlay !== '';
       } catch (error) {
         console.error(`Pengecekan audio gagal untuk ${url}:`, error);
         return false;
@@ -278,13 +283,16 @@
     async function tryPlayAudio(audio, url, maxRetries = 3, retryDelay = 500) {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
+          console.log(`Attempt ${attempt}: Playing ${url}`);
           audio.src = url;
           audio.load();
           await audio.play();
+          console.log(`Successfully played: ${url}`);
           return true;
         } catch (error) {
           console.warn(`Percobaan ${attempt} gagal memutar ${url}:`, error);
           if (attempt === maxRetries) {
+            console.error(`Failed to play ${url} after ${maxRetries} attempts`);
             return false;
           }
           await new Promise(resolve => setTimeout(resolve, retryDelay));
@@ -302,6 +310,7 @@
           if (window.lyrics && Array.isArray(window.lyrics)) {
             preloadedLyrics[path] = window.lyrics;
             window.lyrics = null;
+            console.log(`Preloaded lyrics: ${path}`);
           }
         };
         script.onerror = () => {
@@ -343,6 +352,7 @@
       timerCountdown.classList.add('hidden');
       timerEndTime = null;
       customTimerInput.classList.add('hidden');
+      timerError.classList.add('hidden');
 
       if (minutes > 0) {
         const milliseconds = minutes * 60 * 1000;
@@ -364,6 +374,7 @@
           timerCountdown.classList.add('hidden');
           timerEndTime = null;
           customTimerInput.classList.add('hidden');
+          timerError.classList.add('hidden');
         }, milliseconds);
         timerId = setInterval(updateTimerCountdown, 1000);
         updateTimerCountdown();
@@ -387,8 +398,8 @@
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
           radius: Math.random() * 1 + 0.2,
-          speed: Math.random() * 0.08 + 0.02,
-          opacity: Math.random() * 0.15 + 0.05
+          speed: Math.random() * 0.07 + 0.02,
+          opacity: Math.random() * 0.12 + 0.05
         });
       }
 
@@ -425,11 +436,14 @@
         }
         albumsData[album].songCount++;
       });
-      return Object.values(albumsData).filter(album => album.name);
+      return Object.values(albumsData).filter(album => album.name !== 'unknown');
     }
 
     function loadAlbums() {
-      if (!albumList) return;
+      if (!albumList) {
+        console.error('albumList element not found');
+        return;
+      }
       albumList.innerHTML = '';
       const albums = getAlbums();
 
@@ -438,6 +452,7 @@
 
       if (albums.length === 0) {
         albumList.innerHTML = '<p class="text-center text-gray-300">Tidak ada album ditemukan</p>';
+        console.warn('No albums found');
         return;
       }
 
@@ -467,10 +482,15 @@
 
       startPrompt.classList.remove('hidden');
       lyricsContainer.classList.add('hidden');
+      playlistContainer.classList.add('hidden');
+      console.log('Albums loaded:', albums);
     }
 
     function showAlbumSongs(album) {
-      if (!albumList || !playlistContainer || !backButton || !startPrompt || !lyricsContainer) return;
+      if (!albumList || !playlistContainer || !backButton || !startPrompt || !lyricsContainer) {
+        console.error('Required DOM elements missing');
+        return;
+      }
       
       albumList.classList.add('hidden');
       playlistContainer.classList.remove('hidden');
@@ -507,13 +527,19 @@
       playlistContainer.appendChild(document.getElementById('timerContainer'));
 
       if (currentPlaylist.length === 0) {
-        playlistContainer.innerHTML += '<p class="text-center text-gray-300">Tidak ada lagu ditemukan</p>';
+        playlistContainer.innerHTML += `
+          <div class="empty-state p-4 text-center">
+            <i class="fas fa-exclamation-triangle text-base text-orange-400 mb-2"></i>
+            <p class="text-gray-300 text-xs">Tidak ada lagu ditemukan untuk album ${album}</p>
+          </div>
+        `;
+        console.warn(`No songs found for album: ${album}`);
         return;
       }
 
       currentPlaylist.forEach((song, index) => {
         const songElement = document.createElement('div');
-        songElement.classList.add('card', 'p-2', 'fade-in', 'flex', 'items-center', 'space-x-2', 'cursor-pointer');
+        songElement.classList.add('card', 'p-3', 'fade-in', 'flex', 'items-center', 'space-x-3', 'cursor-pointer');
         songElement.style.animationDelay = `${index * 0.02}s`;
         songElement.dataset.songIndex = index;
         songElement.innerHTML = `
@@ -521,7 +547,7 @@
             <i class="fas fa-play-circle"></i>
           </div>
           <div class="flex-1">
-            <h4 class="text-xs font-medium text-white">${song.title}</h4>
+            <h4 class="text-sm font-medium text-white">${song.title}</h4>
             <p class="text-gray-300 text-xs">${song.artist}</p>
           </div>
           <div class="text-gray-400 text-xs">
@@ -531,6 +557,8 @@
         songElement.addEventListener('click', () => playSong(song, index));
         playlistContainer.appendChild(songElement);
       });
+
+      console.log(`Playlist loaded for album: ${album}, songs:`, currentPlaylist);
     }
 
     async function playSong(song, index) {
@@ -548,6 +576,7 @@
             <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
             File audio tidak valid: ${song.title}
           `;
+          console.error(`Invalid audio file: ${song.mp3}`);
           isSwitchingSong = false;
           return;
         }
@@ -581,6 +610,7 @@
             <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
             Tidak dapat memutar: ${song.title}
           `;
+          console.error(`Failed to play: ${song.mp3}`);
         }
       } catch (error) {
         console.error('Error saat memutar lagu:', error);
@@ -634,6 +664,7 @@
             <p class="text-gray-300 text-xs">Tidak ada lirik</p>
           </div>
         `;
+        console.warn('No lyric path provided');
         return;
       }
 
@@ -905,7 +936,7 @@
       } catch (error) {
         console.error('Error pada parallax effect:', error);
       }
-    }, 70);
+    }, 80);
 
     if (backButton) {
       backButton.addEventListener('click', () => {
@@ -936,6 +967,7 @@
             timerCountdown.classList.add('hidden');
             sleepTimer.value = "0";
             customTimerInput.classList.add('hidden');
+            timerError.classList.add('hidden');
           }
 
           audioPlayer.removeEventListener('timeupdate', handleTimeUpdate);
@@ -975,9 +1007,10 @@
       });
     }
 
-    if (sleepTimer && customTimerInput) {
+    if (sleepTimer && customTimerInput && timerError) {
       sleepTimer.addEventListener('change', () => {
         try {
+          timerError.classList.add('hidden');
           if (sleepTimer.value === "custom") {
             customTimerInput.classList.remove('hidden');
             customTimerInput.focus();
@@ -994,10 +1027,13 @@
       customTimerInput.addEventListener('input', () => {
         try {
           const minutes = parseInt(customTimerInput.value);
-          if (!isNaN(minutes) && minutes > 0) {
-            setSleepTimer(minutes);
-            sleepTimer.value = "custom";
+          if (isNaN(minutes) || minutes < 1 || minutes > 999) {
+            timerError.classList.remove('hidden');
+            return;
           }
+          timerError.classList.add('hidden');
+          setSleepTimer(minutes);
+          sleepTimer.value = "custom";
         } catch (error) {
           console.error('Error saat mengatur timer custom:', error);
         }
