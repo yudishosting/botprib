@@ -286,7 +286,7 @@
     let timerId = null;
     let timerEndTime = null;
 
-    // Perbaikan: Tambahan untuk deteksi scroll manual yang lebih sensitif
+    // Perbaikan: Tambahan untuk deteksi scroll manual yang paling sensitif
     let isUserScrolling = false;
     let scrollTimeout;
 
@@ -326,7 +326,8 @@
         }
       }
       return false;
-      }
+    }
+
     function preloadAllLyrics() {
       const uniqueLyricPaths = [...new Set(playlist.map(song => song.lyric).filter(path => path))];
       uniqueLyricPaths.forEach(path => {
@@ -775,11 +776,19 @@
       audioPlayer.removeEventListener('play', handlePlay);
       audioPlayer.removeEventListener('loadedmetadata', updateDuration);
       
-      // PERBAIKAN: Hapus listener lama jika ada
+      // PERBAIKAN: Gunakan event 'touchstart' atau 'mousedown' untuk deteksi yang lebih cepat
       if (lyricsContainer) {
         lyricsContainer.removeEventListener('scroll', handleLyricScroll);
-        // PERBAIKAN: Tambahkan listener baru
+        lyricsContainer.removeEventListener('touchstart', handleInteractionStart);
+        lyricsContainer.removeEventListener('mousedown', handleInteractionStart);
+        lyricsContainer.removeEventListener('touchend', handleInteractionEnd);
+        lyricsContainer.removeEventListener('mouseup', handleInteractionEnd);
+
         lyricsContainer.addEventListener('scroll', handleLyricScroll);
+        lyricsContainer.addEventListener('touchstart', handleInteractionStart);
+        lyricsContainer.addEventListener('mousedown', handleInteractionStart);
+        lyricsContainer.addEventListener('touchend', handleInteractionEnd);
+        lyricsContainer.addEventListener('mouseup', handleInteractionEnd);
       }
 
       audioPlayer.addEventListener('timeupdate', handleTimeUpdate);
@@ -789,13 +798,26 @@
       audioPlayer.addEventListener('loadedmetadata', updateDuration);
     }
     
-    // PERBAIKAN: FUNGSI BARU UNTUK DETEKSI SCROLL MANUAL
-    function handleLyricScroll() {
+    // Perbaikan: Fungsi baru untuk deteksi interaksi pengguna
+    function handleInteractionStart() {
       isUserScrolling = true;
       clearTimeout(scrollTimeout);
+    }
+    
+    function handleInteractionEnd() {
       scrollTimeout = setTimeout(() => {
         isUserScrolling = false;
-      }, 500); // Reset flag lebih cepat
+      }, 500);
+    }
+
+    function handleLyricScroll() {
+        // PERBAIKAN: Jika ada pergerakan scroll, set isUserScrolling ke true
+        // ini bekerja bersama handleInteractionStart/End untuk memastikan responsivitas
+        isUserScrolling = true;
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            isUserScrolling = false;
+        }, 500);
     }
 
     function handleTimeUpdate() {
