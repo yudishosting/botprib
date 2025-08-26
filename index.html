@@ -81,7 +81,7 @@
         </div>
       </div>
 
-      <div id="lyrics" class="hidden mt-6 p-6 glass-effect rounded-xl text-white text-base max-h-80 overflow-y-auto"></div>
+      <div id="lyrics" class="hidden mt-6 p-4 glass-effect rounded-xl text-white text-sm max-h-60 overflow-y-auto"></div>
 
       <footer class="mt-8 glass-effect rounded-xl p-4 flex justify-center space-x-4">
         <a href="https://instagram.com/yudis_299" target="_blank" class="contact-btn">
@@ -657,16 +657,16 @@
       if (!lyricsContainer) return;
       lyricsContainer.innerHTML = `
         <div class="text-center py-4">
-          <i class="fas fa-spinner loading text-base text-accent mb-2"></i>
-          <p class="text-gray-300 text-xs">Memuat lirik...</p>
+          <i class="fas fa-spinner loading text-sm text-accent mb-2"></i>
+          <p class="text-gray-400 text-xs">Memuat lirik...</p>
         </div>
       `;
 
       if (!lyricPath) {
         lyricsContainer.innerHTML = `
           <div class="empty-state">
-            <i class="fas fa-music text-base text-gray-400 mb-2"></i>
-            <p class="text-gray-300 text-xs">Tidak ada lirik</p>
+            <i class="fas fa-music text-sm text-gray-400 mb-2"></i>
+            <p class="text-gray-400 text-xs">Tidak ada lirik</p>
           </div>
         `;
         return;
@@ -725,8 +725,8 @@
       if (!lyricsContainer) return;
       lyricsContainer.innerHTML = `
         <div class="empty-state">
-          <i class="fas fa-exclamation-triangle text-base text-orange-400 mb-2"></i>
-          <p class="text-gray-300 text-xs">${message}</p>
+          <i class="fas fa-exclamation-triangle text-sm text-orange-400 mb-2"></i>
+          <p class="text-gray-400 text-xs">${message}</p>
         </div>
       `;
     }
@@ -737,8 +737,8 @@
       if (!currentLyrics || !Array.isArray(currentLyrics)) {
         lyricsContainer.innerHTML = `
           <div class="empty-state">
-            <i class="fas fa-music text-base text-gray-400 mb-2"></i>
-            <p class="text-gray-300 text-xs">Tidak ada lirik</p>
+            <i class="fas fa-music text-sm text-gray-400 mb-2"></i>
+            <p class="text-gray-400 text-xs">Tidak ada lirik</p>
           </div>
         `;
         return;
@@ -910,10 +910,18 @@
       try {
         const currentLine = document.querySelector(`[data-index="${currentLineIndex}"]`);
         if (currentLine) {
-          currentLine.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
+          const containerHeight = lyricsContainer.offsetHeight;
+          const lineTop = currentLine.offsetTop;
+          const lineHeight = currentLine.offsetHeight;
+          const scrollTop = lyricsContainer.scrollTop;
+          const centerOffset = containerHeight / 2 - lineHeight / 2;
+
+          if (lineTop < scrollTop || lineTop > scrollTop + containerHeight - lineHeight) {
+            lyricsContainer.scrollTo({
+              top: lineTop - centerOffset,
+              behavior: 'smooth'
+            });
+          }
         }
       } catch (error) {
         console.error('Error saat scroll lirik:', error);

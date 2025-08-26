@@ -89,29 +89,34 @@ body {
 }
 
 .lyric-line {
-  padding: 4px 8px;
-  margin: 2px 0;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  opacity: 0.7;
-  font-size: 0.85rem;
-  line-height: 1.6;
+  padding: 3px 6px;
+  margin: 1px 0;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  opacity: 0.5;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-light);
 }
 
 .lyric-line.current {
   color: var(--accent);
-  opacity: 1;
-  background: var(--dark-accent);
-  border-left: 2px solid var(--accent);
-  font-weight: 500;
+  opacity: 0.9;
+  background: rgba(90, 180, 255, 0.08);
+  border-left: 1px solid var(--accent);
+  font-weight: 400;
 }
 
 .lyric-line.passed {
   opacity: 0.3;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.2);
 }
 
 .lyric-line.upcoming {
+  opacity: 0.5;
+}
+
+.lyric-line:hover {
   opacity: 0.8;
 }
 
@@ -284,7 +289,7 @@ footer {
     font-size: 0.7rem;
   }
   .lyric-line {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
   .timer-section {
     max-width: 100%;
