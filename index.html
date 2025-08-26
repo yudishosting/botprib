@@ -25,7 +25,30 @@
 
       <div id="albumList" class="grid-responsive"></div>
 
-      <div id="playlist" class="hidden"></div>
+      <div id="playlist" class="hidden">
+        <div id="timerSection" class="mb-6">
+          <div class="glass-effect rounded-xl p-4 flex items-center justify-between">
+            <div class="timer-container flex items-center gap-3">
+              <i class="fas fa-clock text-accent"></i>
+              <select id="sleepTimer" class="timer-select">
+                <option value="0">Timer Tidur</option>
+                <option value="10">10 Menit</option>
+                <option value="30">30 Menit</option>
+                <option value="60">1 Jam</option>
+                <option value="end">Sampai Selesai</option>
+                <option value="custom">Kustom</option>
+              </select>
+              <div id="customTimerInput" class="hidden flex items-center gap-2">
+                <input type="number" id="customTimerValue" min="1" max="180" placeholder="Menit" class="timer-input">
+                <button id="setCustomTimer" class="px-3 py-1 bg-accent text-dark rounded-lg hover:bg-accent-hover transition-all duration-300 text-sm">
+                  Set
+                </button>
+              </div>
+              <span id="timerCountdown" class="text-xs text-gray-300 ml-2 hidden">Sisa: 00:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <audio id="audioPlayer" preload="auto" class="hidden"></audio>
 
@@ -55,18 +78,6 @@
               <i class="fas fa-step-forward text-base"></i>
             </button>
 
-            <div class="timer-container">
-              <i class="fas fa-clock text-gray-300"></i>
-              <select id="sleepTimer" class="timer-select">
-                <option value="0">Timer Tidur</option>
-                <option value="15">15 Menit</option>
-                <option value="30">30 Menit</option>
-                <option value="45">45 Menit</option>
-                <option value="60">1 Jam</option>
-              </select>
-              <span id="timerCountdown" class="text-xs text-gray-300 ml-2 hidden">Sisa: 00:00</span>
-            </div>
-
             <div class="volume-container">
               <i class="fas fa-volume-up text-gray-300"></i>
               <input type="range" min="0" max="1" step="0.01" value="1" class="volume-slider" id="volumeSlider">
@@ -91,133 +102,151 @@
   </div>
 
   <script>
-    // Playlist dari localStorage
+    // Playlist dengan struktur folder yang lebih terorganisir
     let playlist = JSON.parse(localStorage.getItem('playlist')) || [
       {
+        folder: "Random",
         artist: "Nadhif Basalamah",
         title: "Bergema Sampai Selamanya",
         mp3: "music/random/bergema.mp3",
         lyric: "lyrics/random/bergema.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "images/random/random.jpg"
       },
       {
+        folder: "Random",
         artist: "Nadhif Basalamah",
         title: "Penjaga Hati",
         mp3: "music/random/penjagahati.mp3",
         lyric: "lyrics/random/penjagahati.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "images/random/random.jpg"
       },
       {
+        folder: "Random",
         artist: "Kendis",
         title: "ours to keep",
         mp3: "music/random/keep.mp3",
         lyric: "lyrics/random/keep.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "images/random/random.jpg"
       },
       {
+        folder: "Random",
         artist: "Matty Healy",
         title: "About You",
         mp3: "music/random/aboutyou.mp3",
         lyric: "lyrics/random/aboutyou.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "images/random/random.jpg"
       },
       {
+        folder: "Random",
         artist: "Dougy Mandagi",
         title: "Sweet disposition",
         mp3: "music/random/disposition.mp3",
         lyric: "lyrics/random/disposition.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "images/random/random.jpg"
       },
       {
+        folder: "Random",
         artist: "One direction",
         title: "where we are",
         mp3: "music/random/weare.mp3",
         lyric: "lyrics/random/weare.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "images/random/random.jpg"
       },
       {
+        folder: "Random",
         artist: "Aris Lesmana",
         title: "Mangu",
         mp3: "music/random/mangu.mp3",
         lyric: "lyrics/random/mangu.js",
-        artistPhoto: "/images/random/random.jpg"
+        artistPhoto: "images/random/random.jpg"
       },
       {
+        folder: "Hindia",
         artist: "Hindia",
         title: "Everything U Are",
         mp3: "music/hindia/everything.mp3",
         lyric: "lyrics/hindia/everything.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "images/hindia/hindia.jpg"
       },
       {
+        folder: "Hindia",
         artist: "Hindia",
         title: "Ramai Sepi Bersama",
         mp3: "music/hindia/bersama.mp3",
         lyric: "lyrics/hindia/bersama.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "images/hindia/hindia.jpg"
       },
       {
+        folder: "Hindia",
         artist: "Hindia",
         title: "Semua Lagu Cinta Terdengar Sama",
         mp3: "music/hindia/sama.mp3",
         lyric: "lyrics/hindia/sama.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "images/hindia/hindia.jpg"
       },
       {
+        folder: "Hindia",
         artist: "Hindia",
         title: "Rumah ke rumah",
         mp3: "music/hindia/rumah.mp3",
         lyric: "lyrics/hindia/rumah.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "images/hindia/hindia.jpg"
       },
       {
+        folder: "Hindia",
         artist: "Hindia",
         title: "Evaluasi",
         mp3: "music/hindia/evaluasi.mp3",
         lyric: "lyrics/hindia/evaluasi.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "images/hindia/hindia.jpg"
       },
       {
+        folder: "Hindia",
         artist: "Hindia",
         title: "Cincin",
         mp3: "music/hindia/cincin.mp3",
         lyric: "lyrics/hindia/cincin.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "images/hindia/hindia.jpg"
       },
       {
+        folder: "Hindia",
         artist: "Hindia",
         title: "Kita Kesana",
         mp3: "music/hindia/kitakesana.mp3",
         lyric: "lyrics/hindia/kitakesana.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "images/hindia/hindia.jpg"
       },
       {
+        folder: "Hindia",
         artist: "Hindia",
         title: "Rasakan Nikmatnya Hidup",
         mp3: "music/hindia/nikmatnya.mp3",
         lyric: "lyrics/hindia/nikmatnya.js",
-        artistPhoto: "/images/hindia/hindia.jpg"
+        artistPhoto: "images/hindia/hindia.jpg"
       },
       {
+        folder: "Nina",
         artist: "Feast",
         title: "Feast",
         mp3: "music/nina/feast.mp3",
         lyric: "lyrics/nina/feast.js",
-        artistPhoto: "/images/nina/nina.jpg"
+        artistPhoto: "images/nina/nina.jpg"
       },
       {
+        folder: "Nina",
         artist: "Feast",
         title: "Tarot",
         mp3: "music/nina/tarot.mp3",
         lyric: "lyrics/nina/tarot.js",
-        artistPhoto: "/images/nina/nina.jpg"
+        artistPhoto: "images/nina/nina.jpg"
       },
       {
+        folder: "Nina",
         artist: "Feast",
         title: "o,Tuan",
         mp3: "music/nina/otuan.mp3",
         lyric: "lyrics/nina/otuan.js",
-        artistPhoto: "/images/nina/nina.jpg"
+        artistPhoto: "images/nina/nina.jpg"
       }
     ];
 
@@ -240,6 +269,9 @@
     const startPrompt = document.getElementById('startPrompt');
     const sleepTimer = document.getElementById('sleepTimer');
     const timerCountdown = document.getElementById('timerCountdown');
+    const customTimerInput = document.getElementById('customTimerInput');
+    const customTimerValue = document.getElementById('customTimerValue');
+    const setCustomTimer = document.getElementById('setCustomTimer');
 
     // State
     let currentLyrics = [];
@@ -252,9 +284,8 @@
     let timerId = null;
     let timerEndTime = null;
 
-    function getAlbumFromPath(mp3Path) {
-      const parts = mp3Path.split('/');
-      return parts.length > 1 ? parts[1] : 'unknown';
+    function getAlbumFromPath(song) {
+      return song.folder || 'unknown';
     }
 
     async function checkAudioFile(url) {
@@ -330,7 +361,7 @@
       timerCountdown.classList.remove('hidden');
     }
 
-    function setSleepTimer(minutes) {
+    function setSleepTimer(minutes, isEndOfPlaylist = false) {
       if (timerId) {
         clearTimeout(timerId);
         clearInterval(timerId);
@@ -339,8 +370,18 @@
       timerCountdown.classList.add('hidden');
       timerEndTime = null;
 
-      if (minutes > 0) {
-        const milliseconds = minutes * 60 * 1000;
+      if (minutes > 0 || isEndOfPlaylist) {
+        let milliseconds;
+        if (isEndOfPlaylist) {
+          // Estimate remaining playlist duration
+          let totalDuration = 0;
+          for (let i = currentSongIndex; i < currentPlaylist.length; i++) {
+            totalDuration += 180; // Assume 3 minutes per song for estimation
+          }
+          milliseconds = totalDuration * 1000 - (audioPlayer.currentTime * 1000);
+        } else {
+          milliseconds = minutes * 60 * 1000;
+        }
         timerEndTime = Date.now() + milliseconds;
         timerId = setTimeout(() => {
           audioPlayer.pause();
@@ -356,6 +397,7 @@
             el.classList.remove('bg-dark-accent');
           });
           sleepTimer.value = "0";
+          customTimerInput.classList.add('hidden');
           timerCountdown.classList.add('hidden');
           timerEndTime = null;
         }, milliseconds);
@@ -374,7 +416,7 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const particleCount = 10; // Reduced further for smoothness
+      const particleCount = 10;
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
@@ -409,7 +451,7 @@
     function getAlbums() {
       const albumsData = {};
       playlist.forEach(song => {
-        const album = getAlbumFromPath(song.mp3);
+        const album = getAlbumFromPath(song);
         if (!albumsData[album]) {
           albumsData[album] = {
             name: album.charAt(0).toUpperCase() + album.slice(1),
@@ -473,7 +515,7 @@
       lyricsContainer.classList.remove('hidden');
       playlistContainer.innerHTML = '';
 
-      const filteredSongs = playlist.filter(song => getAlbumFromPath(song.mp3) === album);
+      const filteredSongs = playlist.filter(song => getAlbumFromPath(song) === album);
       currentPlaylist = filteredSongs;
       currentSongIndex = -1;
 
@@ -498,11 +540,16 @@
       `;
       playlistContainer.appendChild(albumHeader);
 
+      const timerSection = document.getElementById('timerSection');
+      playlistContainer.appendChild(timerSection);
+
       if (currentPlaylist.length === 0) {
         playlistContainer.innerHTML += '<p class="text-center text-gray-300">Tidak ada lagu ditemukan</p>';
         return;
       }
 
+      const songListContainer = document.createElement('div');
+      songListContainer.classList.add('song-list');
       currentPlaylist.forEach((song, index) => {
         const songElement = document.createElement('div');
         songElement.classList.add('card', 'p-2', 'fade-in', 'flex', 'items-center', 'space-x-2', 'cursor-pointer');
@@ -521,8 +568,9 @@
           </div>
         `;
         songElement.addEventListener('click', () => playSong(song, index));
-        playlistContainer.appendChild(songElement);
+        songListContainer.appendChild(songElement);
       });
+      playlistContainer.appendChild(songListContainer);
     }
 
     async function playSong(song, index) {
@@ -546,7 +594,7 @@
 
         currentSongIndex = index;
 
-        document.querySelectorAll('#playlist > div.card').forEach(el => {
+        document.querySelectorAll('#playlist > div.song-list > div.card').forEach(el => {
           el.classList.remove('bg-dark-accent');
         });
 
@@ -834,9 +882,12 @@
         `;
         musicControls.classList.add('hidden');
         currentSongIndex = -1;
-        document.querySelectorAll('#playlist > div.card').forEach(el => {
+        document.querySelectorAll('#playlist > div.song-list > div.card').forEach(el => {
           el.classList.remove('bg-dark-accent');
         });
+        if (sleepTimer.value === 'end') {
+          setSleepTimer(0, true);
+        }
         return;
       }
       const nextSong = currentPlaylist[nextIndex];
@@ -927,6 +978,7 @@
             timerEndTime = null;
             timerCountdown.classList.add('hidden');
             sleepTimer.value = "0";
+            customTimerInput.classList.add('hidden');
           }
 
           audioPlayer.removeEventListener('timeupdate', handleTimeUpdate);
@@ -969,10 +1021,38 @@
     if (sleepTimer) {
       sleepTimer.addEventListener('change', () => {
         try {
-          const minutes = parseInt(sleepTimer.value);
-          setSleepTimer(minutes);
+          const value = sleepTimer.value;
+          if (value === 'custom') {
+            customTimerInput.classList.remove('hidden');
+            customTimerValue.focus();
+          } else {
+            customTimerInput.classList.add('hidden');
+            if (value === 'end') {
+              setSleepTimer(0, true);
+            } else {
+              const minutes = parseInt(value);
+              setSleepTimer(minutes);
+            }
+          }
         } catch (error) {
           console.error('Error saat mengatur timer tidur:', error);
+        }
+      });
+    }
+
+    if (setCustomTimer) {
+      setCustomTimer.addEventListener('click', () => {
+        try {
+          const minutes = parseInt(customTimerValue.value);
+          if (minutes >= 1 && minutes <= 180) {
+            setSleepTimer(minutes);
+            customTimerInput.classList.add('hidden');
+            sleepTimer.value = 'custom';
+          } else {
+            alert('Masukkan waktu antara 1 dan 180 menit.');
+          }
+        } catch (error) {
+          console.error('Error saat mengatur timer kustom:', error);
         }
       });
     }

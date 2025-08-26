@@ -194,6 +194,11 @@ body {
   gap: 0.6rem;
 }
 
+.song-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
 .empty-state {
   background: var(--glass-bg);
   border: 1px dashed var(--glass-border);
@@ -283,6 +288,23 @@ body {
   color: var(--text-light);
 }
 
+.timer-input {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 0.4rem 0.8rem;
+  color: var(--text-light);
+  font-size: 0.8rem;
+  width: 80px;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.timer-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 6px rgba(90, 180, 255, 0.2);
+}
+
 .timer-countdown {
   font-family: 'Space Mono', monospace;
   opacity: 0.8;
@@ -344,7 +366,7 @@ footer {
   .volume-slider {
     width: 60px;
   }
-  .timer-select {
+  .timer-select, .timer-input {
     font-size: 0.75rem;
     padding: 0.35rem 0.7rem;
   }
