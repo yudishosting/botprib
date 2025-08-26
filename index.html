@@ -13,27 +13,6 @@
   <canvas id="particleCanvas"></canvas>
 
   <div id="mainContent" class="container max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative">
-    <div id="timerSection" class="timer-section fixed top-4 right-4 z-20">
-      <div class="glass-effect rounded-xl p-4 flex items-center gap-3">
-        <i class="fas fa-clock text-accent text-lg"></i>
-        <select id="sleepTimer" class="timer-select">
-          <option value="0">Timer Tidur</option>
-          <option value="5">5 Menit</option>
-          <option value="15">15 Menit</option>
-          <option value="30">30 Menit</option>
-          <option value="60">1 Jam</option>
-          <option value="custom">Kustom</option>
-        </select>
-        <div id="customTimerInput" class="hidden flex items-center gap-2">
-          <input type="number" id="customMinutes" min="1" max="180" placeholder="Menit" class="timer-input">
-          <button id="setCustomTimer" class="px-3 py-1 bg-accent text-dark rounded-lg hover:bg-accent-hover transition-all duration-300 text-sm">
-            Set
-          </button>
-        </div>
-        <span id="timerCountdown" class="text-xs text-gray-300 hidden">Sisa: 00:00</span>
-      </div>
-    </div>
-
     <div class="glass-effect rounded-xl p-6 sm:p-8 relative z-10">
       <div id="startPrompt" class="start-prompt text-lg sm:text-xl mb-6 fade-in">
         Jelajahi Koleksi Musik
@@ -48,6 +27,26 @@
 
       <div id="playlist" class="hidden">
         <div id="playlistHeader" class="mb-4"></div>
+        <div id="timerSection" class="timer-section mb-6">
+          <div class="glass-effect rounded-lg p-3 flex items-center gap-2">
+            <i class="fas fa-clock text-accent text-base"></i>
+            <select id="sleepTimer" class="timer-select">
+              <option value="0">Timer Tidur</option>
+              <option value="5">5 Menit</option>
+              <option value="15">15 Menit</option>
+              <option value="30">30 Menit</option>
+              <option value="60">1 Jam</option>
+              <option value="custom">Custom</option>
+            </select>
+            <div id="customTimerInput" class="hidden flex items-center gap-2">
+              <input type="number" id="customMinutes" min="1" max="180" placeholder="Menit" class="timer-input">
+              <button id="setCustomTimer" class="px-2 py-1 bg-accent text-dark rounded-md hover:bg-accent-hover transition-colors duration-200 text-xs">
+                Set
+              </button>
+            </div>
+            <span id="timerCountdown" class="text-xs text-gray-300 hidden">Sisa: 00:00</span>
+          </div>
+        </div>
         <div id="songList" class="song-list"></div>
       </div>
 
@@ -1042,7 +1041,7 @@
             alert('Masukkan waktu antara 1 dan 180 menit.');
           }
         } catch (error) {
-          console.error('Error saat mengatur timer kustom:', error);
+          console.error('Error saat mengatur timer custom:', error);
         }
       });
     }
