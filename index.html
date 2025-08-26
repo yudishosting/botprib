@@ -77,11 +77,6 @@
             <button onclick="playNextSongManual()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Selanjutnya">
               <i class="fas fa-step-forward text-base"></i>
             </button>
-
-            <div class="volume-container">
-              <i class="fas fa-volume-up text-gray-300"></i>
-              <input type="range" min="0" max="1" step="0.01" value="1" class="volume-slider" id="volumeSlider">
-            </div>
           </div>
         </div>
       </div>
@@ -270,8 +265,6 @@
     const progressBar = document.getElementById('progressBar');
     const currentTimeEl = document.getElementById('currentTime');
     const durationEl = document.getElementById('duration');
-    const volumeSlider = document.getElementById('volumeSlider');
-    const mainContent = document.getElementById('mainContent');
     const startPrompt = document.getElementById('startPrompt');
     const sleepTimer = document.getElementById('sleepTimer');
     const timerCountdown = document.getElementById('timerCountdown');
@@ -1003,16 +996,6 @@
           audioPlayer.currentTime = percentage * audioPlayer.duration;
         } catch (error) {
           console.error('Error saat mengatur progress:', error);
-        }
-      });
-    }
-
-    if (volumeSlider) {
-      volumeSlider.addEventListener('input', () => {
-        try {
-          audioPlayer.volume = volumeSlider.value;
-        } catch (error) {
-          console.error('Error saat mengatur volume:', error);
         }
       });
     }

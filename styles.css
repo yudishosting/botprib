@@ -188,30 +188,6 @@ body {
   transition: width 0.1s linear;
 }
 
-.volume-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.volume-slider {
-  -webkit-appearance: none;
-  width: 60px;
-  height: 3px;
-  background: var(--glass-border);
-  border-radius: 3px;
-  outline: none;
-}
-
-.volume-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 8px;
-  height: 8px;
-  background: var(--accent);
-  border-radius: 50%;
-  cursor: pointer;
-}
-
 .timer-section {
   max-width: 320px;
 }
@@ -309,9 +285,6 @@ footer {
   }
   .lyric-line {
     font-size: 0.8rem;
-  }
-  .volume-slider {
-    width: 50px;
   }
   .timer-section {
     max-width: 100%;
