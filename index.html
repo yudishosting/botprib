@@ -785,14 +785,18 @@
         const currentTime = audioPlayer.currentTime;
         let newLineIndex = -1;
 
-        for (let i = currentLyrics.length - 1; i >= 0; i--) {
-          if (currentTime >= currentLyrics[i].time) {
+        // Cari baris lirik yang sesuai dengan waktu saat ini (dengan toleransi 0.1 detik)
+        for (let i = 0; i < currentLyrics.length; i++) {
+          if (currentTime >= currentLyrics[i].time && 
+              (i === currentLyrics.length - 1 || currentTime < (currentLyrics[i + 1]?.time || Infinity))) {
             newLineIndex = i;
             break;
           }
         }
 
+        // Logging untuk debug
         if (newLineIndex !== currentLineIndex) {
+          console.log(`Waktu: ${currentTime.toFixed(2)}s, Baris: ${newLineIndex}, Lirik: ${currentLyrics[newLineIndex]?.text || 'Tidak ada'}, Waktu Lirik: ${currentLyrics[newLineIndex]?.time || 'N/A'}`);
           currentLineIndex = newLineIndex;
           updateLyricDisplay();
           if (newLineIndex >= 0) {
@@ -916,7 +920,7 @@
     function scrollToCurrentLine() {
       try {
         const currentLine = document.querySelector(`[data-index="${currentLineIndex}"]`);
-        if (currentLine) {
+        if (currentLine && lyricsContainer) {
           const containerHeight = lyricsContainer.offsetHeight;
           const lineTop = currentLine.offsetTop;
           const lineHeight = currentLine.offsetHeight;
