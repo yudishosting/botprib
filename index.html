@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Playlist musik favorit dengan pengalaman premium">
+  <meta name="description" content="Playlist musik favorit dengan pengalaman premium dan timer tidur">
   <title>Playlist Musik</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -55,13 +55,16 @@
               <i class="fas fa-step-forward text-base"></i>
             </button>
 
-            <button id="shuffleBtn" onclick="toggleShuffle()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Shuffle">
-              <i class="fas fa-random text-base"></i>
-            </button>
-
-            <button id="repeatBtn" onclick="toggleRepeat()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Repeat">
-              <i class="fas fa-redo text-base"></i>
-            </button>
+            <div class="timer-container">
+              <i class="fas fa-clock text-gray-300"></i>
+              <select id="sleepTimer" class="timer-select">
+                <option value="0">Timer Tidur</option>
+                <option value="15">15 Menit</option>
+                <option value="30">30 Menit</option>
+                <option value="45">45 Menit</option>
+                <option value="60">1 Jam</option>
+              </select>
+            </div>
 
             <div class="volume-container">
               <i class="fas fa-volume-up text-gray-300"></i>
@@ -234,8 +237,7 @@
     const volumeSlider = document.getElementById('volumeSlider');
     const mainContent = document.getElementById('mainContent');
     const startPrompt = document.getElementById('startPrompt');
-    const shuffleBtn = document.getElementById('shuffleBtn');
-    const repeatBtn = document.getElementById('repeatBtn');
+    const sleepTimer = document.getElementById('sleepTimer');
 
     // State
     let currentLyrics = [];
@@ -245,9 +247,7 @@
     let isPlaying = false;
     let preloadedLyrics = {};
     let isSwitchingSong = false;
-    let isShuffle = false;
-    let isRepeat = false;
-    let originalPlaylist = [];
+    let timerId = null;
 
     function getAlbumFromPath(mp3Path) {
       const parts = mp3Path.split('/');
@@ -321,7 +321,7 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const particleCount = 12; // Reduced for performance
+      const particleCount = 12;
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
@@ -422,7 +422,6 @@
 
       const filteredSongs = playlist.filter(song => getAlbumFromPath(song.mp3) === album);
       currentPlaylist = filteredSongs;
-      originalPlaylist = [...currentPlaylist];
       currentSongIndex = -1;
 
       const albumHeader = document.createElement('div');
@@ -439,7 +438,7 @@
             </div>
           `}
           <div>
-            <h2 class="text-lg font-medium text-white font-['Playfair_Display']">${album.charAt(0).toUpperCase() + album.slice(1)}</h2>
+            <h2 class="text-lg font-medium text-white font-['Space_Mono']">${album.charAt(0).toUpperCase() + album.slice(1)}</h2>
             <p class="text-gray-300 text-xs">${currentPlaylist.length} lagu</p>
           </div>
         </div>
@@ -558,29 +557,30 @@
       }
     }
 
-    function toggleShuffle() {
-      isShuffle = !isShuffle;
-      shuffleBtn.style.color = isShuffle ? '#4db6ff' : 'white';
-      if (isShuffle) {
-        shufflePlaylist();
-      } else {
-        currentPlaylist = [...originalPlaylist];
-        showAlbumSongs(getAlbumFromPath(currentPlaylist[0]?.mp3));
+    function setSleepTimer(minutes) {
+      if (timerId) {
+        clearTimeout(timerId);
+        timerId = null;
       }
-    }
 
-    function shufflePlaylist() {
-      for (let i = currentPlaylist.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [currentPlaylist[i], currentPlaylist[j]] = [currentPlaylist[j], currentPlaylist[i]];
+      if (minutes > 0) {
+        const milliseconds = minutes * 60 * 1000;
+        timerId = setTimeout(() => {
+          audioPlayer.pause();
+          isPlaying = false;
+          updatePlayPauseButton();
+          nowPlaying.innerHTML = `
+            <i class="fas fa-moon mr-2 text-accent"></i>
+            Timer tidur selesai
+          `;
+          musicControls.classList.add('hidden');
+          currentSongIndex = -1;
+          document.querySelectorAll('#playlist > div.card').forEach(el => {
+            el.classList.remove('bg-dark-accent');
+          });
+          sleepTimer.value = "0";
+        }, milliseconds);
       }
-      showAlbumSongs(getAlbumFromPath(currentPlaylist[0]?.mp3));
-    }
-
-    function toggleRepeat() {
-      isRepeat = !isRepeat;
-      repeatBtn.style.color = isRepeat ? '#4db6ff' : 'white';
-      audioPlayer.loop = isRepeat;
     }
 
     function loadLyrics(lyricPath) {
@@ -799,10 +799,6 @@
     }
 
     async function playNextSong() {
-      if (isRepeat) {
-        await playSong(currentPlaylist[currentSongIndex], currentSongIndex);
-        return;
-      }
       let nextIndex = currentSongIndex + 1;
       if (nextIndex >= currentPlaylist.length) {
         nowPlaying.innerHTML = `
@@ -874,7 +870,7 @@
       } catch (error) {
         console.error('Error pada parallax effect:', error);
       }
-    }, 50); // Increased debounce for better performance
+    }, 50);
 
     if (backButton) {
       backButton.addEventListener('click', () => {
@@ -896,6 +892,12 @@
           currentPlaylist = [];
           currentSongIndex = -1;
           playlistContainer.innerHTML = '';
+
+          if (timerId) {
+            clearTimeout(timerId);
+            timerId = null;
+            sleepTimer.value = "0";
+          }
 
           audioPlayer.removeEventListener('timeupdate', handleTimeUpdate);
           audioPlayer.removeEventListener('ended', handleEnded);
@@ -930,6 +932,17 @@
           audioPlayer.volume = volumeSlider.value;
         } catch (error) {
           console.error('Error saat mengatur volume:', error);
+        }
+      });
+    }
+
+    if (sleepTimer) {
+      sleepTimer.addEventListener('change', () => {
+        try {
+          const minutes = parseInt(sleepTimer.value);
+          setSleepTimer(minutes);
+        } catch (error) {
+          console.error('Error saat mengatur timer tidur:', error);
         }
       });
     }

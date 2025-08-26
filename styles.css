@@ -261,6 +261,33 @@ body {
   cursor: pointer;
 }
 
+.timer-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timer-select {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 0.4rem 0.8rem;
+  color: var(--text-light);
+  font-size: 0.75rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.timer-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(77, 182, 255, 0.2);
+}
+
+.timer-select option {
+  background: var(--secondary-bg);
+  color: var(--text-light);
+}
+
 .start-prompt {
   background: linear-gradient(90deg, var(--accent), var(--accent-hover));
   -webkit-background-clip: text;
@@ -315,5 +342,9 @@ footer {
   }
   .volume-slider {
     width: 50px;
+  }
+  .timer-select {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
   }
 }
