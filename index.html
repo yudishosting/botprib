@@ -290,7 +290,7 @@
     let timerId = null;
     let timerEndTime = null;
 
-    // Tambahan untuk deteksi scroll manual
+    // PERBAIKAN: Tambahan untuk deteksi scroll manual
     let isUserScrolling = false;
     let scrollTimeout;
 
@@ -780,9 +780,10 @@
       audioPlayer.removeEventListener('play', handlePlay);
       audioPlayer.removeEventListener('loadedmetadata', updateDuration);
       
-      // Tambahan listener untuk lirik
+      // PERBAIKAN: Hapus listener lama jika ada
       if (lyricsContainer) {
         lyricsContainer.removeEventListener('scroll', handleLyricScroll);
+        // PERBAIKAN: Tambahkan listener baru
         lyricsContainer.addEventListener('scroll', handleLyricScroll);
       }
 
@@ -793,7 +794,7 @@
       audioPlayer.addEventListener('loadedmetadata', updateDuration);
     }
     
-    // FUNGSI BARU UNTUK DETEKSI SCROLL MANUAL
+    // PERBAIKAN: FUNGSI BARU UNTUK DETEKSI SCROLL MANUAL
     function handleLyricScroll() {
       isUserScrolling = true;
       clearTimeout(scrollTimeout);
@@ -818,7 +819,7 @@
           currentLineIndex = newLineIndex;
           updateLyricDisplay();
           
-          // Kondisional auto-scroll: Hanya scroll jika pengguna tidak sedang melakukan scroll manual
+          // PERBAIKAN: Kondisional auto-scroll: Hanya scroll jika pengguna tidak sedang melakukan scroll manual
           if (newLineIndex >= 0 && !isUserScrolling) {
             scrollToCurrentLine();
           }
@@ -1009,7 +1010,7 @@
           audioPlayer.removeEventListener('play', handlePlay);
           audioPlayer.removeEventListener('loadedmetadata', updateDuration);
           
-          // Hapus listener scroll
+          // PERBAIKAN: Hapus listener scroll
           if (lyricsContainer) {
             lyricsContainer.removeEventListener('scroll', handleLyricScroll);
           }
