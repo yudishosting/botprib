@@ -343,14 +343,20 @@
     function getArtists() {
       const artistsData = {};
       playlist.forEach(song => {
-        if (!artistsData[song.artist]) {
-          artistsData[song.artist] = {
-            name: song.artist,
+        let artistKey = song.artist;
+        // Jika lagu berada di folder "random", gunakan "Random" sebagai kunci artis utama
+        if (song.mp3.includes('music/random/')) {
+          artistKey = 'Random';
+        }
+        
+        if (!artistsData[artistKey]) {
+          artistsData[artistKey] = {
+            name: artistKey,
             songCount: 0,
-            photo: song.artistPhoto
+            photo: song.artistPhoto // Gunakan foto artis dari lagu
           };
         }
-        artistsData[song.artist].songCount++;
+        artistsData[artistKey].songCount++;
       });
       return Object.values(artistsData).filter(artist => artist.name);
     }
@@ -402,9 +408,15 @@
       lyricsContainer.classList.remove('hidden');
       playlistContainer.innerHTML = '';
 
-      currentPlaylist = playlist.filter(song => song.artist === artist);
+      // Filter lagu berdasarkan artis atau folder Random
+      if (artist === 'Random') {
+        currentPlaylist = playlist.filter(song => song.mp3.includes('music/random/'));
+      } else {
+        currentPlaylist = playlist.filter(song => song.artist === artist);
+      }
       currentSongIndex = -1;
 
+      // Header untuk artis atau folder Random
       const artistHeader = document.createElement('div');
       artistHeader.classList.add('text-center', 'mb-4', 'fade-in');
       const artistPhoto = currentPlaylist[0]?.artistPhoto;
@@ -426,26 +438,77 @@
       `;
       playlistContainer.appendChild(artistHeader);
 
-      currentPlaylist.forEach((song, index) => {
-        const songElement = document.createElement('div');
-        songElement.classList.add('card', 'p-2', 'fade-in', 'flex', 'items-center', 'space-x-2', 'cursor-pointer');
-        songElement.style.animationDelay = `${index * 0.04}s`;
-        songElement.dataset.songIndex = index;
-        songElement.innerHTML = `
-          <div class="text-yellow-200 text-base">
-            <i class="fas fa-play-circle"></i>
-          </div>
-          <div class="flex-1">
-            <h4 class="text-xs font-medium text-white">${song.title}</h4>
-            <p class="text-gray-300 text-xs">${song.artist}</p>
-          </div>
-          <div class="text-gray-400 text-xs">
-            ${index + 1}/${currentPlaylist.length}
-          </div>
-        `;
-        songElement.addEventListener('click', () => playSong(song, index));
-        playlistContainer.appendChild(songElement);
-      });
+      // Jika artis adalah Random, kelompokkan lagu berdasarkan artis asli
+      if (artist === 'Random') {
+        const songsByArtist = {};
+        currentPlaylist.forEach(song => {
+          if (!songsByArtist[song.artist]) {
+            songsByArtist[song.artist] = [];
+          }
+          songsByArtist[song.artist].push(song);
+        });
+
+        Object.keys(songsByArtist).forEach((artistName, artistIndex) => {
+          const artistSection = document.createElement('div');
+          artistSection.classList.add('mb-6');
+          
+          // Subheader untuk setiap artis di dalam Random
+          const artistSubHeader = document.createElement('div');
+          artistSubHeader.classList.add('text-left', 'mb-2');
+          artistSubHeader.innerHTML = `
+            <h3 class="text-base font-medium text-white">${artistName}</h3>
+            <p class="text-gray-300 text-xs">${songsByArtist[artistName].length} lagu</p>
+          `;
+          artistSection.appendChild(artistSubHeader);
+
+          // Tambahkan lagu-lagu untuk artis ini
+          songsByArtist[artistName].forEach((song, songIndex) => {
+            const globalIndex = currentPlaylist.findIndex(s => s === song);
+            const songElement = document.createElement('div');
+            songElement.classList.add('card', 'p-2', 'fade-in', 'flex', 'items-center', 'space-x-2', 'cursor-pointer');
+            songElement.style.animationDelay = `${(artistIndex * 0.1 + songIndex * 0.04)}s`;
+            songElement.dataset.songIndex = globalIndex;
+            songElement.innerHTML = `
+              <div class="text-yellow-200 text-base">
+                <i class="fas fa-play-circle"></i>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-xs font-medium text-white">${song.title}</h4>
+                <p class="text-gray-300 text-xs">${song.artist}</p>
+              </div>
+              <div class="text-gray-400 text-xs">
+                ${globalIndex + 1}/${currentPlaylist.length}
+              </div>
+            `;
+            songElement.addEventListener('click', () => playSong(song, globalIndex));
+            artistSection.appendChild(songElement);
+          });
+
+          playlistContainer.appendChild(artistSection);
+        });
+      } else {
+        // Tampilan lagu normal untuk artis lain
+        currentPlaylist.forEach((song, index) => {
+          const songElement = document.createElement('div');
+          songElement.classList.add('card', 'p-2', 'fade-in', 'flex', 'items-center', 'space-x-2', 'cursor-pointer');
+          songElement.style.animationDelay = `${index * 0.04}s`;
+          songElement.dataset.songIndex = index;
+          songElement.innerHTML = `
+            <div class="text-yellow-200 text-base">
+              <i class="fas fa-play-circle"></i>
+            </div>
+            <div class="flex-1">
+              <h4 class="text-xs font-medium text-white">${song.title}</h4>
+              <p class="text-gray-300 text-xs">${song.artist}</p>
+            </div>
+            <div class="text-gray-400 text-xs">
+              ${index + 1}/${currentPlaylist.length}
+            </div>
+          `;
+          songElement.addEventListener('click', () => playSong(song, index));
+          playlistContainer.appendChild(songElement);
+        });
+      }
     }
 
     // Mainkan Lagu dengan error handling
