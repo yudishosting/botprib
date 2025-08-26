@@ -12,7 +12,28 @@
 <body>
   <canvas id="particleCanvas"></canvas>
 
-  <div id="mainContent" class="container max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div id="mainContent" class="container max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative">
+    <div id="timerSection" class="timer-section fixed top-4 right-4 z-20">
+      <div class="glass-effect rounded-xl p-4 flex items-center gap-3">
+        <i class="fas fa-clock text-accent text-lg"></i>
+        <select id="sleepTimer" class="timer-select">
+          <option value="0">Timer Tidur</option>
+          <option value="5">5 Menit</option>
+          <option value="15">15 Menit</option>
+          <option value="30">30 Menit</option>
+          <option value="60">1 Jam</option>
+          <option value="custom">Kustom</option>
+        </select>
+        <div id="customTimerInput" class="hidden flex items-center gap-2">
+          <input type="number" id="customMinutes" min="1" max="180" placeholder="Menit" class="timer-input">
+          <button id="setCustomTimer" class="px-3 py-1 bg-accent text-dark rounded-lg hover:bg-accent-hover transition-all duration-300 text-sm">
+            Set
+          </button>
+        </div>
+        <span id="timerCountdown" class="text-xs text-gray-300 hidden">Sisa: 00:00</span>
+      </div>
+    </div>
+
     <div class="glass-effect rounded-xl p-6 sm:p-8 relative z-10">
       <div id="startPrompt" class="start-prompt text-lg sm:text-xl mb-6 fade-in">
         Jelajahi Koleksi Musik
@@ -27,56 +48,46 @@
 
       <div id="playlist" class="hidden">
         <div id="playlistHeader" class="mb-4"></div>
-        <div id="songList" class="grid-playlist"></div>
-        <div id="lyrics" class="hidden mt-6 p-6 glass-effect rounded-xl text-white text-base max-h-80 overflow-y-auto"></div>
-        <div id="musicControls" class="hidden mt-6">
-          <div class="glass-effect rounded-xl p-6">
-            <div id="nowPlaying" class="text-base font-medium now-playing-text mb-4"></div>
-            
-            <div class="progress-container mb-4" id="progressContainer">
-              <div class="progress-bar" id="progressBar"></div>
-            </div>
-            
-            <div class="flex justify-between text-sm text-gray-300 mb-4">
-              <span id="currentTime">0:00</span>
-              <span id="duration">0:00</span>
-            </div>
+        <div id="songList" class="song-list"></div>
+      </div>
 
-            <div class="flex items-center justify-center space-x-4">
-              <button onclick="playPreviousSong()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Sebelumnya">
-                <i class="fas fa-step-backward text-base"></i>
-              </button>
-              
-              <button id="playPauseBtn" onclick="togglePlayPause()" class="control-btn w-12 h-12 text-white flex items-center justify-center text-lg" data-tooltip="Play/Pause">
-                <i id="playPauseIcon" class="fas fa-play"></i>
-              </button>
-              
-              <button onclick="playNextSongManual()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Selanjutnya">
-                <i class="fas fa-step-forward text-base"></i>
-              </button>
-            </div>
-            <div class="flex justify-center mt-4 space-x-2 items-center">
-              <div class="timer-container flex items-center">
-                <i class="fas fa-clock text-gray-300"></i>
-                <select id="sleepTimer" class="timer-select">
-                  <option value="0">Timer Tidur</option>
-                  <option value="10">10 Menit</option>
-                  <option value="30">30 Menit</option>
-                  <option value="60">60 Menit</option>
-                  <option value="custom">Kustom</option>
-                </select>
-              </div>
-              <div id="customTimerInput" class="hidden">
-                <input type="number" id="customMinutes" placeholder="Menit" class="custom-timer-input w-24">
-                <button onclick="setCustomTimer()" class="custom-timer-btn">Set</button>
-              </div>
-              <span id="timerCountdown" class="text-xs text-gray-300 ml-2 hidden">Sisa: 00:00</span>
+      <audio id="audioPlayer" preload="auto" class="hidden"></audio>
+
+      <div id="musicControls" class="hidden mt-6">
+        <div class="glass-effect rounded-xl p-6">
+          <div id="nowPlaying" class="text-base font-medium now-playing-text mb-4"></div>
+          
+          <div class="progress-container mb-4" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          
+          <div class="flex justify-between text-sm text-gray-300 mb-4">
+            <span id="currentTime">0:00</span>
+            <span id="duration">0:00</span>
+          </div>
+
+          <div class="flex items-center justify-center space-x-4">
+            <button onclick="playPreviousSong()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Sebelumnya">
+              <i class="fas fa-step-backward text-base"></i>
+            </button>
+            
+            <button id="playPauseBtn" onclick="togglePlayPause()" class="control-btn w-12 h-12 text-white flex items-center justify-center text-lg" data-tooltip="Play/Pause">
+              <i id="playPauseIcon" class="fas fa-play"></i>
+            </button>
+            
+            <button onclick="playNextSongManual()" class="control-btn w-10 h-10 text-white flex items-center justify-center" data-tooltip="Lagu Selanjutnya">
+              <i class="fas fa-step-forward text-base"></i>
+            </button>
+
+            <div class="volume-container">
+              <i class="fas fa-volume-up text-gray-300"></i>
+              <input type="range" min="0" max="1" step="0.01" value="1" class="volume-slider" id="volumeSlider">
             </div>
           </div>
         </div>
       </div>
 
-      <audio id="audioPlayer" preload="auto" class="hidden"></audio>
+      <div id="lyrics" class="hidden mt-6 p-6 glass-effect rounded-xl text-white text-base max-h-80 overflow-y-auto"></div>
 
       <footer class="mt-8 glass-effect rounded-xl p-4 flex justify-center space-x-4">
         <a href="https://instagram.com/yudis_299" target="_blank" class="contact-btn">
@@ -94,7 +105,8 @@
   <script>
     // Playlist dari localStorage
     let playlist = JSON.parse(localStorage.getItem('playlist')) || [
-    {
+      //===================================================
+      {
         artist: "Kendis",
         title: "ours to keep",
         mp3: "music/random/keep.mp3",
@@ -126,7 +138,7 @@
         artistPhoto: "/images/random/randomm.jpg",
         folder: "Random Barat 🪩"
       },
-     //===================================================
+      //===================================================
       {
         artist: "Nadhif Basalamah",
         title: "Bergema Sampai Selamanya",
@@ -246,8 +258,8 @@
     // DOM Elements
     const albumList = document.getElementById('albumList');
     const playlistContainer = document.getElementById('playlist');
-    const songListContainer = document.getElementById('songList');
     const playlistHeader = document.getElementById('playlistHeader');
+    const songList = document.getElementById('songList');
     const audioPlayer = document.getElementById('audioPlayer');
     const lyricsContainer = document.getElementById('lyrics');
     const backButton = document.getElementById('backButton');
@@ -259,12 +271,14 @@
     const progressBar = document.getElementById('progressBar');
     const currentTimeEl = document.getElementById('currentTime');
     const durationEl = document.getElementById('duration');
+    const volumeSlider = document.getElementById('volumeSlider');
     const mainContent = document.getElementById('mainContent');
     const startPrompt = document.getElementById('startPrompt');
     const sleepTimer = document.getElementById('sleepTimer');
     const timerCountdown = document.getElementById('timerCountdown');
     const customTimerInput = document.getElementById('customTimerInput');
     const customMinutesInput = document.getElementById('customMinutes');
+    const setCustomTimer = document.getElementById('setCustomTimer');
 
     // State
     let currentLyrics = [];
@@ -277,9 +291,8 @@
     let timerId = null;
     let timerEndTime = null;
 
-    // Fungsi untuk mendapatkan nama album dari properti 'folder'
     function getAlbumFromPath(song) {
-        return song.folder || 'unknown';
+      return song.folder || 'unknown';
     }
 
     async function checkAudioFile(url) {
@@ -346,6 +359,7 @@
       if (remainingMs <= 0) {
         timerCountdown.classList.add('hidden');
         clearTimeout(timerId);
+        clearInterval(timerId);
         timerId = null;
         timerEndTime = null;
         return;
@@ -381,24 +395,13 @@
             el.classList.remove('bg-dark-accent');
           });
           sleepTimer.value = "0";
+          customTimerInput.classList.add('hidden');
           timerCountdown.classList.add('hidden');
           timerEndTime = null;
         }, milliseconds);
-        
         timerId = setInterval(updateTimerCountdown, 1000);
         updateTimerCountdown();
       }
-    }
-
-    function setCustomTimer() {
-      const customMinutes = parseInt(customMinutesInput.value);
-      if (isNaN(customMinutes) || customMinutes <= 0) {
-        alert("Masukkan menit yang valid!");
-        return;
-      }
-      setSleepTimer(customMinutes);
-      customTimerInput.classList.add('hidden');
-      sleepTimer.value = "0";
     }
 
     function initParticles() {
@@ -443,7 +446,6 @@
       });
     }
 
-    // Fungsi yang dimodifikasi untuk membaca properti 'folder'
     function getAlbums() {
       const albumsData = {};
       playlist.forEach(song => {
@@ -505,14 +507,14 @@
     }
 
     function showAlbumSongs(album) {
-      if (!albumList || !playlistContainer || !backButton || !startPrompt) return;
+      if (!albumList || !playlistContainer || !backButton || !startPrompt || !lyricsContainer || !songList) return;
       
       albumList.classList.add('hidden');
       playlistContainer.classList.remove('hidden');
       backButton.classList.remove('hidden');
       startPrompt.classList.add('hidden');
       lyricsContainer.classList.remove('hidden');
-      songListContainer.innerHTML = '';
+      songList.innerHTML = '';
 
       const filteredSongs = playlist.filter(song => getAlbumFromPath(song) === album);
       currentPlaylist = filteredSongs;
@@ -542,7 +544,7 @@
       playlistHeader.appendChild(albumHeader);
 
       if (currentPlaylist.length === 0) {
-        songListContainer.innerHTML = '<p class="text-center text-gray-300">Tidak ada lagu ditemukan</p>';
+        songList.innerHTML = '<p class="text-center text-gray-300">Tidak ada lagu ditemukan</p>';
         return;
       }
 
@@ -564,7 +566,7 @@
           </div>
         `;
         songElement.addEventListener('click', () => playSong(song, index));
-        songListContainer.appendChild(songElement);
+        songList.appendChild(songElement);
       });
     }
 
@@ -961,8 +963,7 @@
           currentLineIndex = -1;
           currentPlaylist = [];
           currentSongIndex = -1;
-          songListContainer.innerHTML = '';
-          customTimerInput.classList.add('hidden');
+          songList.innerHTML = '';
 
           if (timerId) {
             clearTimeout(timerId);
@@ -971,6 +972,7 @@
             timerEndTime = null;
             timerCountdown.classList.add('hidden');
             sleepTimer.value = "0";
+            customTimerInput.classList.add('hidden');
           }
 
           audioPlayer.removeEventListener('timeupdate', handleTimeUpdate);
@@ -1000,18 +1002,47 @@
       });
     }
 
+    if (volumeSlider) {
+      volumeSlider.addEventListener('input', () => {
+        try {
+          audioPlayer.volume = volumeSlider.value;
+        } catch (error) {
+          console.error('Error saat mengatur volume:', error);
+        }
+      });
+    }
+
     if (sleepTimer) {
       sleepTimer.addEventListener('change', () => {
         try {
-          if (sleepTimer.value === 'custom') {
+          const value = sleepTimer.value;
+          if (value === 'custom') {
             customTimerInput.classList.remove('hidden');
+            customMinutesInput.focus();
           } else {
             customTimerInput.classList.add('hidden');
-            const minutes = parseInt(sleepTimer.value);
+            const minutes = parseInt(value);
             setSleepTimer(minutes);
           }
         } catch (error) {
           console.error('Error saat mengatur timer tidur:', error);
+        }
+      });
+    }
+
+    if (setCustomTimer) {
+      setCustomTimer.addEventListener('click', () => {
+        try {
+          const minutes = parseInt(customMinutesInput.value);
+          if (minutes >= 1 && minutes <= 180) {
+            setSleepTimer(minutes);
+            customTimerInput.classList.add('hidden');
+            sleepTimer.value = "0";
+          } else {
+            alert('Masukkan waktu antara 1 dan 180 menit.');
+          }
+        } catch (error) {
+          console.error('Error saat mengatur timer kustom:', error);
         }
       });
     }
