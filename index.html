@@ -104,7 +104,6 @@
   <script>
     // Playlist dari localStorage
     let playlist = JSON.parse(localStorage.getItem('playlist')) || [
-      //===================================================
       {
         artist: "Kendis",
         title: "ours to keep",
@@ -137,7 +136,6 @@
         artistPhoto: "/images/random/random.jpg",
         folder: "Random Barat 🪩"
       },
-      //===================================================
       {
         artist: "Nadhif Basalamah",
         title: "Bergema Sampai Selamanya",
@@ -162,7 +160,6 @@
         artistPhoto: "/images/randomm/random.jpg",
         folder: "Random Lokal 🚀"
       },
-      //===================================================
       {
         artist: "Hindia",
         title: "Everything U Are",
@@ -227,7 +224,6 @@
         artistPhoto: "/images/hindia/hindia.jpg",
         folder: "Hindia"
       },
-      //===================================================
       {
         artist: "Feast",
         title: "Feast",
@@ -290,7 +286,7 @@
     let timerId = null;
     let timerEndTime = null;
 
-    // PERBAIKAN: Tambahan untuk deteksi scroll manual
+    // Perbaikan: Tambahan untuk deteksi scroll manual yang lebih sensitif
     let isUserScrolling = false;
     let scrollTimeout;
 
@@ -800,7 +796,7 @@
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         isUserScrolling = false;
-      }, 1500); // Reset flag setelah 1.5 detik
+      }, 500); // Reset flag lebih cepat
     }
 
     function handleTimeUpdate() {
