@@ -64,6 +64,7 @@
                 <option value="45">45 Menit</option>
                 <option value="60">1 Jam</option>
               </select>
+              <span id="timerCountdown" class="text-xs text-gray-300 ml-2 hidden">Sisa: 00:00</span>
             </div>
 
             <div class="volume-container">
@@ -238,6 +239,7 @@
     const mainContent = document.getElementById('mainContent');
     const startPrompt = document.getElementById('startPrompt');
     const sleepTimer = document.getElementById('sleepTimer');
+    const timerCountdown = document.getElementById('timerCountdown');
 
     // State
     let currentLyrics = [];
@@ -248,6 +250,7 @@
     let preloadedLyrics = {};
     let isSwitchingSong = false;
     let timerId = null;
+    let timerEndTime = null;
 
     function getAlbumFromPath(mp3Path) {
       const parts = mp3Path.split('/');
@@ -311,6 +314,56 @@
       return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
+    function updateTimerCountdown() {
+      if (!timerEndTime || !timerCountdown) return;
+      const now = Date.now();
+      const remainingMs = timerEndTime - now;
+      if (remainingMs <= 0) {
+        timerCountdown.classList.add('hidden');
+        clearInterval(timerId);
+        timerId = null;
+        timerEndTime = null;
+        return;
+      }
+      const remainingSeconds = Math.floor(remainingMs / 1000);
+      timerCountdown.textContent = `Sisa: ${formatTime(remainingSeconds)}`;
+      timerCountdown.classList.remove('hidden');
+    }
+
+    function setSleepTimer(minutes) {
+      if (timerId) {
+        clearTimeout(timerId);
+        clearInterval(timerId);
+        timerId = null;
+      }
+      timerCountdown.classList.add('hidden');
+      timerEndTime = null;
+
+      if (minutes > 0) {
+        const milliseconds = minutes * 60 * 1000;
+        timerEndTime = Date.now() + milliseconds;
+        timerId = setTimeout(() => {
+          audioPlayer.pause();
+          isPlaying = false;
+          updatePlayPauseButton();
+          nowPlaying.innerHTML = `
+            <i class="fas fa-moon mr-2 text-accent"></i>
+            Timer tidur selesai
+          `;
+          musicControls.classList.add('hidden');
+          currentSongIndex = -1;
+          document.querySelectorAll('#playlist > div.card').forEach(el => {
+            el.classList.remove('bg-dark-accent');
+          });
+          sleepTimer.value = "0";
+          timerCountdown.classList.add('hidden');
+          timerEndTime = null;
+        }, milliseconds);
+        timerId = setInterval(updateTimerCountdown, 1000);
+        updateTimerCountdown();
+      }
+    }
+
     function initParticles() {
       const canvas = document.getElementById('particleCanvas');
       if (!canvas) return;
@@ -321,15 +374,15 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const particleCount = 12;
+      const particleCount = 10; // Reduced further for smoothness
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          radius: Math.random() * 1.5 + 0.5,
-          speed: Math.random() * 0.15 + 0.05,
-          opacity: Math.random() * 0.3 + 0.1
+          radius: Math.random() * 1.2 + 0.3,
+          speed: Math.random() * 0.1 + 0.03,
+          opacity: Math.random() * 0.2 + 0.05
         });
       }
 
@@ -385,7 +438,7 @@
       albums.forEach((albumData, index) => {
         const albumElement = document.createElement('div');
         albumElement.classList.add('album-card', 'fade-in');
-        albumElement.style.animationDelay = `${index * 0.08}s`;
+        albumElement.style.animationDelay = `${index * 0.06}s`;
         albumElement.innerHTML = `
           ${albumData.photo ? `
             <div class="mb-2 flex justify-center">
@@ -453,7 +506,7 @@
       currentPlaylist.forEach((song, index) => {
         const songElement = document.createElement('div');
         songElement.classList.add('card', 'p-2', 'fade-in', 'flex', 'items-center', 'space-x-2', 'cursor-pointer');
-        songElement.style.animationDelay = `${index * 0.04}s`;
+        songElement.style.animationDelay = `${index * 0.03}s`;
         songElement.dataset.songIndex = index;
         songElement.innerHTML = `
           <div class="text-accent text-base">
@@ -554,32 +607,6 @@
     function updatePlayPauseButton() {
       if (playPauseIcon) {
         playPauseIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
-      }
-    }
-
-    function setSleepTimer(minutes) {
-      if (timerId) {
-        clearTimeout(timerId);
-        timerId = null;
-      }
-
-      if (minutes > 0) {
-        const milliseconds = minutes * 60 * 1000;
-        timerId = setTimeout(() => {
-          audioPlayer.pause();
-          isPlaying = false;
-          updatePlayPauseButton();
-          nowPlaying.innerHTML = `
-            <i class="fas fa-moon mr-2 text-accent"></i>
-            Timer tidur selesai
-          `;
-          musicControls.classList.add('hidden');
-          currentSongIndex = -1;
-          document.querySelectorAll('#playlist > div.card').forEach(el => {
-            el.classList.remove('bg-dark-accent');
-          });
-          sleepTimer.value = "0";
-        }, milliseconds);
       }
     }
 
@@ -862,15 +889,15 @@
       try {
         const x = (e.clientX / window.innerWidth) - 0.5;
         const y = (e.clientY / window.innerHeight) - 0.5;
-        mainContent.style.transform = `rotateX(${y * 1.5}deg) rotateY(${x * -1.5}deg) translateZ(0)`;
+        mainContent.style.transform = `rotateX(${y * 1.2}deg) rotateY(${x * -1.2}deg) translateZ(0)`;
         const albumCards = document.querySelectorAll('.album-card');
         albumCards.forEach(card => {
-          card.style.transform = `translate(${x * 6}px, ${y * 6}px) translateZ(6px)`;
+          card.style.transform = `translate(${x * 5}px, ${y * 5}px) translateZ(5px)`;
         });
       } catch (error) {
         console.error('Error pada parallax effect:', error);
       }
-    }, 50);
+    }, 60);
 
     if (backButton) {
       backButton.addEventListener('click', () => {
@@ -895,7 +922,10 @@
 
           if (timerId) {
             clearTimeout(timerId);
+            clearInterval(timerId);
             timerId = null;
+            timerEndTime = null;
+            timerCountdown.classList.add('hidden');
             sleepTimer.value = "0";
           }
 
