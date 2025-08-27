@@ -293,7 +293,7 @@
     let isSwitchingSong = false;
     let timerId = null;
     let timerEndTime = null;
-    let hasScrolledForSong = false; // New flag to track if scroll has occurred for the current song
+    let hasScrolledForSong = false; // Flag untuk lacak scroll awal lagu
 
     function getAlbumFromPath(song) {
       return song.folder || 'tidak diketahui';
@@ -582,7 +582,7 @@
       audioPlayer.pause();
       audioPlayer.src = '';
       audioPlayer.currentTime = 0;
-      hasScrolledForSong = false; // Reset the scroll flag for the new song
+      hasScrolledForSong = false; // Reset scroll flag untuk lagu baru
 
       try {
         const isValidAudio = await checkAudioFile(song.mp3);
@@ -790,12 +790,17 @@
     function scrollToCurrentLine() {
       try {
         const currentLine = document.querySelector(`.lyric-line[data-index="${currentLineIndex}"]`);
-        if (currentLine && lyricsContainer && !hasScrolledForSong) {
-          currentLine.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
+        if (currentLine && lyricsContainer && !hasScrolledForSong && currentLineIndex === 0) {
+          // Hanya scroll jika belum pernah scroll dan ini baris lirik pertama
+          const containerRect = lyricsContainer.getBoundingClientRect();
+          const lineRect = currentLine.getBoundingClientRect();
+          const scrollPosition = currentLine.offsetTop - lyricsContainer.offsetTop - (containerRect.height - lineRect.height) / 2;
+
+          lyricsContainer.scrollTo({
+            top: scrollPosition,
+            behavior: 'smooth'
           });
-          hasScrolledForSong = true; // Set the flag to prevent further forced scrolling
+          hasScrolledForSong = true; // Tandai bahwa scroll awal sudah dilakukan
         }
       } catch (error) {
         console.error('Kesalahan saat scroll ke baris lirik saat ini:', error);
@@ -818,7 +823,7 @@
           currentLineIndex = newLineIndex;
           updateLyricDisplay();
           if (newLineIndex >= 0) {
-            scrollToCurrentLine();
+            scrollToCurrentLine(); // Panggil scroll hanya untuk baris pertama jika belum scroll
           }
         }
 
@@ -845,7 +850,7 @@
         currentLineIndex = -1;
         updateLyricDisplay();
         lyricsContainer.scrollTop = 0;
-        hasScrolledForSong = false; // Reset for the next song
+        hasScrolledForSong = false; // Reset untuk lagu berikutnya
         playNextSong();
       } catch (error) {
         console.error('Kesalahan saat lagu selesai:', error);
