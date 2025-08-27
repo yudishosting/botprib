@@ -293,7 +293,6 @@
     let isSwitchingSong = false;
     let timerId = null;
     let timerEndTime = null;
-    let hasScrolled = false; // Melacak apakah scroll awal sudah dilakukan
 
     function getAlbumFromPath(song) {
       return song.folder || 'tidak diketahui';
@@ -578,7 +577,6 @@
     async function playSong(song, index) {
       if (isSwitchingSong) return;
       isSwitchingSong = true;
-      hasScrolled = false; // Reset scroll untuk lagu baru
 
       audioPlayer.pause();
       audioPlayer.src = '';
@@ -644,10 +642,6 @@
         } else {
           await audioPlayer.play();
           isPlaying = true;
-          if (!hasScrolled && currentLyrics.length > 0) {
-            scrollToFirstLine();
-            hasScrolled = true;
-          }
           if (!timerEndTime) {
             sleepTimer.value = "0";
             customTimerInput.classList.add('hidden');
@@ -699,10 +693,6 @@
         if (currentLyrics.length > 0) {
           displayLyrics();
           startAutoScroll();
-          if (!hasScrolled && isPlaying) {
-            scrollToFirstLine();
-            hasScrolled = true;
-          }
         } else {
           showLyricsError('Format lirik tidak valid');
         }
@@ -728,10 +718,6 @@
           if (currentLyrics.length > 0) {
             displayLyrics();
             startAutoScroll();
-            if (!hasScrolled && isPlaying) {
-              scrollToFirstLine();
-              hasScrolled = true;
-            }
           } else {
             showLyricsError('Format lirik tidak valid');
           }
@@ -799,25 +785,17 @@
       audioPlayer.addEventListener('loadedmetadata', updateDuration);
     }
 
-    function scrollToFirstLine() {
+    function scrollToCurrentLine() {
       try {
-        // Cari baris lirik pertama dengan waktu yang valid
-        let firstLineIndex = 0;
-        for (let i = 0; i < currentLyrics.length; i++) {
-          if (currentLyrics[i].time >= 0) {
-            firstLineIndex = i;
-            break;
-          }
-        }
-        const firstLine = document.querySelector(`.lyric-line[data-index="${firstLineIndex}"]`);
-        if (firstLine && lyricsContainer) {
-          firstLine.scrollIntoView({
+        const currentLine = document.querySelector(`.lyric-line[data-index="${currentLineIndex}"]`);
+        if (currentLine && lyricsContainer) {
+          currentLine.scrollIntoView({
             behavior: 'smooth',
             block: 'center'
           });
         }
       } catch (error) {
-        console.error('Kesalahan saat scroll ke baris pertama:', error);
+        console.error('Kesalahan saat scroll ke baris lirik saat ini:', error);
       }
     }
 
@@ -836,6 +814,9 @@
         if (newLineIndex !== currentLineIndex) {
           currentLineIndex = newLineIndex;
           updateLyricDisplay();
+          if (newLineIndex >= 0) {
+            scrollToCurrentLine();
+          }
         }
 
         const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
@@ -861,7 +842,6 @@
         currentLineIndex = -1;
         updateLyricDisplay();
         lyricsContainer.scrollTop = 0;
-        hasScrolled = false; // Reset untuk lagu berikutnya
         playNextSong();
       } catch (error) {
         console.error('Kesalahan saat lagu selesai:', error);
@@ -925,7 +905,6 @@
         document.querySelectorAll('#songList > div.card').forEach(el => {
           el.classList.remove('bg-dark-accent');
         });
-        hasScrolled = false; // Reset untuk playlist baru
         return;
       }
       const nextSong = currentPlaylist[nextIndex];
@@ -994,7 +973,6 @@
           currentPlaylist = [];
           currentSongIndex = -1;
           songList.innerHTML = '';
-          hasScrolled = false; // Reset saat kembali ke daftar album
 
           if (timerId) {
             clearTimeout(timerId);
