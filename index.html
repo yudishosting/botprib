@@ -109,7 +109,7 @@
         title: "ours to keep",
         mp3: "music/random/keep.mp3",
         lyric: "lyrics/random/keep.js",
-        artistPhoto: "/images/random/random.jpg",
+        artistPhoto: "/images/random/randomm.jpg",
         folder: "Random Barat 🪩"
       },
       {
@@ -117,7 +117,7 @@
         title: "About You",
         mp3: "music/random/aboutyou.mp3",
         lyric: "lyrics/random/aboutyou.js",
-        artistPhoto: "/images/random/random.jpg",
+        artistPhoto: "/images/random/randomm.jpg",
         folder: "Random Barat 🪩"
       },
       {
@@ -125,7 +125,7 @@
         title: "Sweet disposition",
         mp3: "music/random/disposition.mp3",
         lyric: "lyrics/random/disposition.js",
-        artistPhoto: "/images/random/random.jpg",
+        artistPhoto: "/images/random/randomm.jpg",
         folder: "Random Barat 🪩"
       },
       {
@@ -133,31 +133,31 @@
         title: "where we are",
         mp3: "music/random/weare.mp3",
         lyric: "lyrics/random/weare.js",
-        artistPhoto: "/images/random/random.jpg",
+        artistPhoto: "/images/random/randomm.jpg",
         folder: "Random Barat 🪩"
       },
       {
         artist: "Nadhif Basalamah",
         title: "Bergema Sampai Selamanya",
-        mp3: "music/randomm/bergema.mp3",
-        lyric: "lyrics/randomm/bergema.js",
-        artistPhoto: "/images/randomm/random.jpg",
+        mp3: "music/random/bergema.mp3",
+        lyric: "lyrics/random/bergema.js",
+        artistPhoto: "/images/random/random.jpg",
         folder: "Random Lokal 🚀"
       },
       {
         artist: "Nadhif Basalamah",
         title: "Penjaga Hati",
-        mp3: "music/randomm/penjagahati.mp3",
-        lyric: "lyrics/randomm/penjagahati.js",
-        artistPhoto: "/images/randomm/random.jpg",
+        mp3: "music/random/penjagahati.mp3",
+        lyric: "lyrics/random/penjagahati.js",
+        artistPhoto: "/images/random/random.jpg",
         folder: "Random Lokal 🚀"
       },
       {
         artist: "Aris Lesmana",
         title: "Mangu",
-        mp3: "music/randomm/mangu.mp3",
-        lyric: "lyrics/randomm/mangu.js",
-        artistPhoto: "/images/randomm/random.jpg",
+        mp3: "music/random/mangu.mp3",
+        lyric: "lyrics/random/mangu.js",
+        artistPhoto: "/images/random/random.jpg",
         folder: "Random Lokal 🚀"
       },
       {
@@ -285,12 +285,6 @@
     let isSwitchingSong = false;
     let timerId = null;
     let timerEndTime = null;
-
-    // Perbaikan: Tambahan untuk deteksi scroll manual yang paling sensitif
-    let isUserScrolling = false;
-    let scrollTimeout;
-
-    // --- FUNGSI UTAMA ---
 
     function getAlbumFromPath(song) {
       return song.folder || 'unknown';
@@ -597,7 +591,7 @@
           el.classList.remove('bg-dark-accent');
         });
 
-        const currentSongElement = document.querySelector(`[data-song-index="${currentSongIndex}"]`);
+        const currentSongElement = document.querySelector(`[data-index="${currentSongIndex}"]`);
         if (currentSongElement) {
           currentSongElement.classList.add('bg-dark-accent');
         }
@@ -775,49 +769,12 @@
       audioPlayer.removeEventListener('pause', handlePause);
       audioPlayer.removeEventListener('play', handlePlay);
       audioPlayer.removeEventListener('loadedmetadata', updateDuration);
-      
-      // PERBAIKAN: Gunakan event 'touchstart' atau 'mousedown' untuk deteksi yang lebih cepat
-      if (lyricsContainer) {
-        lyricsContainer.removeEventListener('scroll', handleLyricScroll);
-        lyricsContainer.removeEventListener('touchstart', handleInteractionStart);
-        lyricsContainer.removeEventListener('mousedown', handleInteractionStart);
-        lyricsContainer.removeEventListener('touchend', handleInteractionEnd);
-        lyricsContainer.removeEventListener('mouseup', handleInteractionEnd);
-
-        lyricsContainer.addEventListener('scroll', handleLyricScroll);
-        lyricsContainer.addEventListener('touchstart', handleInteractionStart);
-        lyricsContainer.addEventListener('mousedown', handleInteractionStart);
-        lyricsContainer.addEventListener('touchend', handleInteractionEnd);
-        lyricsContainer.addEventListener('mouseup', handleInteractionEnd);
-      }
 
       audioPlayer.addEventListener('timeupdate', handleTimeUpdate);
       audioPlayer.addEventListener('ended', handleEnded);
       audioPlayer.addEventListener('pause', handlePause);
       audioPlayer.addEventListener('play', handlePlay);
       audioPlayer.addEventListener('loadedmetadata', updateDuration);
-    }
-    
-    // Perbaikan: Fungsi baru untuk deteksi interaksi pengguna
-    function handleInteractionStart() {
-      isUserScrolling = true;
-      clearTimeout(scrollTimeout);
-    }
-    
-    function handleInteractionEnd() {
-      scrollTimeout = setTimeout(() => {
-        isUserScrolling = false;
-      }, 500);
-    }
-
-    function handleLyricScroll() {
-        // PERBAIKAN: Jika ada pergerakan scroll, set isUserScrolling ke true
-        // ini bekerja bersama handleInteractionStart/End untuk memastikan responsivitas
-        isUserScrolling = true;
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-            isUserScrolling = false;
-        }, 500);
     }
 
     function handleTimeUpdate() {
@@ -835,9 +792,7 @@
         if (newLineIndex !== currentLineIndex) {
           currentLineIndex = newLineIndex;
           updateLyricDisplay();
-          
-          // PERBAIKAN: Kondisional auto-scroll: Hanya scroll jika pengguna tidak sedang melakukan scroll manual
-          if (newLineIndex >= 0 && !isUserScrolling) {
+          if (newLineIndex >= 0) {
             scrollToCurrentLine();
           }
         }
@@ -956,11 +911,14 @@
 
     function scrollToCurrentLine() {
       try {
-        const currentLine = document.querySelector(`[data-index="${currentLineIndex}"]`);
-        if (currentLine) {
-          currentLine.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
+        const currentLine = document.querySelector(`.lyric-line[data-index="${currentLineIndex}"]`);
+        if (currentLine && lyricsContainer) {
+          const lineRect = currentLine.getBoundingClientRect();
+          const containerRect = lyricsContainer.getBoundingClientRect();
+          const offset = lineRect.top - containerRect.top + lyricsContainer.scrollTop - (containerRect.height / 2) + (lineRect.height / 2);
+          lyricsContainer.scrollTo({
+            top: offset,
+            behavior: 'smooth'
           });
         }
       } catch (error) {
@@ -1020,17 +978,12 @@
             sleepTimer.value = "0";
             customTimerInput.classList.add('hidden');
           }
-          
+
           audioPlayer.removeEventListener('timeupdate', handleTimeUpdate);
           audioPlayer.removeEventListener('ended', handleEnded);
           audioPlayer.removeEventListener('pause', handlePause);
           audioPlayer.removeEventListener('play', handlePlay);
           audioPlayer.removeEventListener('loadedmetadata', updateDuration);
-          
-          // PERBAIKAN: Hapus listener scroll
-          if (lyricsContainer) {
-            lyricsContainer.removeEventListener('scroll', handleLyricScroll);
-          }
 
           loadAlbums();
         } catch (error) {
@@ -1048,6 +1001,7 @@
           const percentage = clickX / width;
           audioPlayer.currentTime = percentage * audioPlayer.duration;
         } catch (error) {
+          console.error('Error saat mengatur progress:', error);
         }
       });
     }
