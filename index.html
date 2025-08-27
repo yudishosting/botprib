@@ -691,6 +691,10 @@
         if (currentLyrics.length > 0) {
           displayLyrics();
           startAutoScroll();
+          if (!hasScrolled && isPlaying) {
+            scrollToFirstLine();
+            hasScrolled = true;
+          }
         } else {
           showLyricsError('Format lirik tidak valid');
         }
@@ -716,6 +720,10 @@
           if (currentLyrics.length > 0) {
             displayLyrics();
             startAutoScroll();
+            if (!hasScrolled && isPlaying) {
+              scrollToFirstLine();
+              hasScrolled = true;
+            }
           } else {
             showLyricsError('Format lirik tidak valid');
           }
@@ -779,14 +787,7 @@
       audioPlayer.addEventListener('timeupdate', handleTimeUpdate);
       audioPlayer.addEventListener('ended', handleEnded);
       audioPlayer.addEventListener('pause', handlePause);
-      audioPlayer.addEventListener('play', () => {
-        handlePlay();
-        // Lakukan scroll sekali saat lagu mulai diputar
-        if (!hasScrolled && currentLyrics.length > 0) {
-          scrollToFirstLine();
-          hasScrolled = true;
-        }
-      });
+      audioPlayer.addEventListener('play', handlePlay);
       audioPlayer.addEventListener('loadedmetadata', updateDuration);
     }
 
@@ -802,12 +803,9 @@
         }
         const firstLine = document.querySelector(`.lyric-line[data-index="${firstLineIndex}"]`);
         if (firstLine && lyricsContainer) {
-          const lineRect = firstLine.getBoundingClientRect();
-          const containerRect = lyricsContainer.getBoundingClientRect();
-          const offset = lineRect.top - containerRect.top + lyricsContainer.scrollTop - (containerRect.height / 2) + (lineRect.height / 2);
-          lyricsContainer.scrollTo({
-            top: offset,
-            behavior: 'smooth'
+          firstLine.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
           });
         }
       } catch (error) {
