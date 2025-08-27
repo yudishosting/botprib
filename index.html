@@ -641,8 +641,8 @@
             customTimerInput.classList.add('hidden');
             timerCountdown.classList.add('hidden');
           }
-          // Lakukan scroll awal hanya jika belum scroll dan sedang play dari pause
-          if (!hasScrolled && currentLyrics.length > 0) {
+          // Lakukan scroll awal hanya jika belum scroll dan lirik sudah dimuat
+          if (!hasScrolled && currentLyrics.length > 0 && document.querySelector('.lyric-line')) {
             setTimeout(() => {
               const initialLineIndex = currentLyrics.findIndex(line => line.time >= audioPlayer.currentTime);
               if (initialLineIndex >= 0) {
@@ -650,8 +650,14 @@
                 updateLyricDisplay();
                 scrollToCurrentLine();
                 hasScrolled = true;
+              } else {
+                // Jika tidak ada baris yang cocok, pilih baris pertama
+                currentLineIndex = 0;
+                updateLyricDisplay();
+                scrollToCurrentLine();
+                hasScrolled = true;
               }
-            }, 100);
+            }, 200); // Penundaan untuk memastikan lirik sudah dirender
           }
         }
         updatePlayPauseButton();
@@ -790,8 +796,8 @@
       audioPlayer.addEventListener('play', handlePlay);
       audioPlayer.addEventListener('loadedmetadata', updateDuration);
 
-      // Lakukan scroll awal hanya jika belum scroll
-      if (!hasScrolled && currentLyrics.length > 0) {
+      // Lakukan scroll awal hanya jika belum scroll dan lirik sudah dimuat
+      if (!hasScrolled && currentLyrics.length > 0 && document.querySelector('.lyric-line')) {
         setTimeout(() => {
           const initialLineIndex = currentLyrics.findIndex(line => line.time >= audioPlayer.currentTime);
           if (initialLineIndex >= 0) {
@@ -799,8 +805,14 @@
             updateLyricDisplay();
             scrollToCurrentLine();
             hasScrolled = true;
+          } else {
+            // Jika tidak ada baris yang cocok, pilih baris pertama
+            currentLineIndex = 0;
+            updateLyricDisplay();
+            scrollToCurrentLine();
+            hasScrolled = true;
           }
-        }, 100);
+        }, 200); // Penundaan untuk memastikan lirik sudah dirender
       }
     }
 

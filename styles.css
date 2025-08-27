@@ -72,11 +72,12 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px; /* Membuat scroll bar sedikit lebih lebar untuk visibilitas */
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--glass-bg);
+  border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -88,28 +89,38 @@ body {
   background: var(--accent-hover);
 }
 
+#lyrics {
+  max-height: 320px; /* Tinggi tetap untuk memastikan scroll bar muncul */
+  min-height: 200px; /* Minimal tinggi untuk konsistensi */
+  overflow-y: auto;
+  padding: 1rem;
+  scroll-behavior: auto; /* Mendukung scroll langsung */
+  position: relative;
+}
+
 .lyric-line {
-  padding: 3px 6px;
-  margin: 1px 0;
+  padding: 6px 8px; /* Padding lebih besar untuk spasi antar baris */
+  margin: 2px 0;
   border-radius: 4px;
   transition: all 0.3s ease;
   opacity: 0.5;
-  font-size: 0.8rem;
-  line-height: 1.5;
+  font-size: 0.9rem; /* Ukuran font sedikit lebih besar untuk kejelasan */
+  line-height: 1.6; /* Spasi baris lebih longgar */
   color: var(--text-light);
+  text-align: center; /* Memusatkan teks untuk tampilan lebih rapi */
 }
 
 .lyric-line.current {
   color: var(--accent);
-  opacity: 0.9;
-  background: rgba(90, 180, 255, 0.08);
-  border-left: 1px solid var(--accent);
-  font-weight: 400;
+  opacity: 1; /* Opacity penuh untuk baris aktif */
+  background: rgba(90, 180, 255, 0.15); /* Latar belakang lebih jelas */
+  border-left: 2px solid var(--accent); /* Garis kiri lebih tebal */
+  font-weight: 500; /* Berat font lebih tebal untuk penekanan */
 }
 
 .lyric-line.passed {
   opacity: 0.3;
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .lyric-line.upcoming {
@@ -288,8 +299,13 @@ footer {
   .contact-label {
     font-size: 0.7rem;
   }
+  #lyrics {
+    max-height: 280px; /* Tinggi sedikit lebih kecil untuk layar kecil */
+    min-height: 160px;
+  }
   .lyric-line {
-    font-size: 0.75rem;
+    font-size: 0.8rem; /* Ukuran font lebih kecil untuk layar kecil */
+    padding: 5px 6px;
   }
   .timer-section {
     max-width: 100%;
