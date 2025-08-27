@@ -70,7 +70,7 @@
               <i class="fas fa-step-backward text-base"></i>
             </button>
             
-            <button id="playPauseBtn" onclick="togglePlayPause()" class="control-btn w-12 h-12 text-white flex items-center justify-center text-lg" data-tooltip="Play/Pause">
+            <button id="playPauseBtn" onclick="togglePlayPause()" class="control-btn w-12 h-12 text-white flex items-center justify-center text-lg" data-tooltip="Putar/Jeda">
               <i id="playPauseIcon" class="fas fa-play"></i>
             </button>
             
@@ -250,7 +250,7 @@
       }
     ];
 
-    // DOM Elements
+    // Elemen DOM
     const albumList = document.getElementById('albumList');
     const playlistContainer = document.getElementById('playlist');
     const playlistHeader = document.getElementById('playlistHeader');
@@ -285,10 +285,10 @@
     let isSwitchingSong = false;
     let timerId = null;
     let timerEndTime = null;
-    let hasScrolled = false; // Track if initial scroll has occurred
+    let hasScrolled = false; // Melacak apakah scroll awal sudah dilakukan
 
     function getAlbumFromPath(song) {
-      return song.folder || 'unknown';
+      return song.folder || 'tidak diketahui';
     }
 
     async function checkAudioFile(url) {
@@ -570,7 +570,7 @@
     async function playSong(song, index) {
       if (isSwitchingSong) return;
       isSwitchingSong = true;
-      hasScrolled = false; // Reset scroll flag for new song
+      hasScrolled = false; // Reset scroll untuk lagu baru
 
       audioPlayer.pause();
       audioPlayer.src = '';
@@ -618,7 +618,7 @@
           `;
         }
       } catch (error) {
-        console.error('Error saat memutar lagu:', error);
+        console.error('Kesalahan saat memutar lagu:', error);
         nowPlaying.innerHTML = `
           <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
           Tidak dapat memutar: ${song.title}
@@ -636,6 +636,10 @@
         } else {
           await audioPlayer.play();
           isPlaying = true;
+          if (!hasScrolled && currentLyrics.length > 0) {
+            scrollToFirstLine();
+            hasScrolled = true;
+          }
           if (!timerEndTime) {
             sleepTimer.value = "0";
             customTimerInput.classList.add('hidden');
@@ -644,7 +648,7 @@
         }
         updatePlayPauseButton();
       } catch (error) {
-        console.error('Gagal toggle play/pause:', error);
+        console.error('Gagal mengubah status putar/jeda:', error);
         nowPlaying.innerHTML = `
           <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
           Tidak dapat memutar lagu
@@ -775,20 +779,20 @@
       audioPlayer.addEventListener('timeupdate', handleTimeUpdate);
       audioPlayer.addEventListener('ended', handleEnded);
       audioPlayer.addEventListener('pause', handlePause);
-      audioPlayer.addEventListener('play', handlePlay);
-      audioPlayer.addEventListener('loadedmetadata', () => {
-        updateDuration();
-        // Perform one-time scroll when metadata is loaded and playback starts
+      audioPlayer.addEventListener('play', () => {
+        handlePlay();
+        // Lakukan scroll sekali saat lagu mulai diputar
         if (!hasScrolled && currentLyrics.length > 0) {
           scrollToFirstLine();
           hasScrolled = true;
         }
       });
+      audioPlayer.addEventListener('loadedmetadata', updateDuration);
     }
 
     function scrollToFirstLine() {
       try {
-        // Find the first lyric line with a valid time
+        // Cari baris lirik pertama dengan waktu yang valid
         let firstLineIndex = 0;
         for (let i = 0; i < currentLyrics.length; i++) {
           if (currentLyrics[i].time >= 0) {
@@ -807,7 +811,7 @@
           });
         }
       } catch (error) {
-        console.error('Error saat scroll ke baris pertama:', error);
+        console.error('Kesalahan saat scroll ke baris pertama:', error);
       }
     }
 
@@ -832,7 +836,7 @@
         progressBar.style.width = `${progress}%`;
         currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
       } catch (error) {
-        console.error('Error pada timeupdate:', error);
+        console.error('Kesalahan pada pembaruan waktu:', error);
       }
     }
 
@@ -840,7 +844,7 @@
       try {
         durationEl.textContent = formatTime(audioPlayer.duration);
       } catch (error) {
-        console.error('Error saat update durasi:', error);
+        console.error('Kesalahan saat memperbarui durasi:', error);
       }
     }
 
@@ -851,10 +855,10 @@
         currentLineIndex = -1;
         updateLyricDisplay();
         lyricsContainer.scrollTop = 0;
-        hasScrolled = false; // Reset for next song
+        hasScrolled = false; // Reset untuk lagu berikutnya
         playNextSong();
       } catch (error) {
-        console.error('Error saat lagu selesai:', error);
+        console.error('Kesalahan saat lagu selesai:', error);
       }
     }
 
@@ -863,7 +867,7 @@
         isPlaying = false;
         updatePlayPauseButton();
       } catch (error) {
-        console.error('Error saat pause:', error);
+        console.error('Kesalahan saat jeda:', error);
       }
     }
 
@@ -879,7 +883,7 @@
           `;
         }
       } catch (error) {
-        console.error('Error saat play:', error);
+        console.error('Kesalahan saat memutar:', error);
       }
     }
 
@@ -915,6 +919,7 @@
         document.querySelectorAll('#songList > div.card').forEach(el => {
           el.classList.remove('bg-dark-accent');
         });
+        hasScrolled = false; // Reset untuk playlist baru
         return;
       }
       const nextSong = currentPlaylist[nextIndex];
@@ -937,7 +942,7 @@
           }
         });
       } catch (error) {
-        console.error('Error saat update lirik:', error);
+        console.error('Kesalahan saat memperbarui tampilan lirik:', error);
       }
     }
 
@@ -959,7 +964,7 @@
           card.style.transform = `translate(${x * 5}px, ${y * 5}px) translateZ(5px)`;
         });
       } catch (error) {
-        console.error('Error pada parallax effect:', error);
+        console.error('Kesalahan pada efek parallax:', error);
       }
     }, 60);
 
@@ -983,7 +988,7 @@
           currentPlaylist = [];
           currentSongIndex = -1;
           songList.innerHTML = '';
-          hasScrolled = false; // Reset scroll flag
+          hasScrolled = false; // Reset saat kembali ke daftar album
 
           if (timerId) {
             clearTimeout(timerId);
@@ -1003,7 +1008,7 @@
 
           loadAlbums();
         } catch (error) {
-          console.error('Error saat kembali ke daftar album:', error);
+          console.error('Kesalahan saat kembali ke daftar album:', error);
         }
       });
     }
@@ -1017,7 +1022,7 @@
           const percentage = clickX / width;
           audioPlayer.currentTime = percentage * audioPlayer.duration;
         } catch (error) {
-          console.error('Error saat mengatur progress:', error);
+          console.error('Kesalahan saat mengatur progress:', error);
         }
       });
     }
@@ -1027,7 +1032,7 @@
         try {
           audioPlayer.volume = volumeSlider.value;
         } catch (error) {
-          console.error('Error saat mengatur volume:', error);
+          console.error('Kesalahan saat mengatur volume:', error);
         }
       });
     }
@@ -1045,7 +1050,7 @@
             setSleepTimer(minutes);
           }
         } catch (error) {
-          console.error('Error saat mengatur timer tidur:', error);
+          console.error('Kesalahan saat mengatur timer tidur:', error);
         }
       });
     }
@@ -1062,7 +1067,7 @@
             alert('Masukkan waktu antara 1 dan 180 menit.');
           }
         } catch (error) {
-          console.error('Error saat mengatur timer custom:', error);
+          console.error('Kesalahan saat mengatur timer kustom:', error);
         }
       });
     }
@@ -1075,7 +1080,7 @@
         preloadAllLyrics();
         loadAlbums();
       } catch (error) {
-        console.error('Error saat inisialisasi:', error);
+        console.error('Kesalahan saat inisialisasi:', error);
       }
     });
   </script>
