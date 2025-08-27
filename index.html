@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -610,6 +609,16 @@
           `;
 
           loadLyrics(song.lyric);
+
+          // === ⬇️ Tambahan: arahkan scroll ke kolom lirik (sekali saja saat mulai putar lagu) ⬇️
+          setTimeout(() => {
+            if (lyricsContainer) {
+              lyricsContainer.classList.remove('hidden');
+              lyricsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 400);
+          // === ⬆️ Tambahan selesai ⬆️
+
         } else {
           nowPlaying.innerHTML = `
             <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
