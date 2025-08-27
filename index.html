@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -26,26 +27,25 @@
       <div id="playlist" class="hidden">
         <div id="playlistHeader" class="mb-4"></div>
         <div id="timerSection" class="timer-section mb-6">
-          <div class="glass-effect rounded-lg p-3 flex items-center gap-2 flex-wrap">
-            <i class="fas fa-clock text-accent text-base"></i>
-            <span class="text-sm font-medium text-muted mr-2">Timer Tidur:</span>
-            <div class="timer-presets">
-              <button class="timer-preset" data-minutes="5">5m</button>
-              <button class="timer-preset" data-minutes="10">10m</button>
-              <button class="timer-preset" data-minutes="15">15m</button>
-              <button class="timer-preset" data-minutes="30">30m</button>
-              <button class="timer-preset" data-minutes="45">45m</button>
-              <button class="timer-preset" data-minutes="60">60m</button>
+          <div class="glass-effect rounded-lg p-4 flex flex-col gap-3">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-clock text-accent text-lg"></i>
+              <span class="text-sm font-medium text-muted">Timer Tidur</span>
+              <span id="timerCountdown" class="timer-countdown hidden ml-auto"></span>
+            </div>
+            <div class="timer-presets flex flex-wrap gap-2">
+              <button class="timer-preset" data-minutes="5">5 Menit</button>
+              <button class="timer-preset" data-minutes="10">10 Menit</button>
+              <button class="timer-preset" data-minutes="15">15 Menit</button>
+              <button class="timer-preset" data-minutes="30">30 Menit</button>
+              <button class="timer-preset" data-minutes="60">1 Jam</button>
               <button id="customTimerBtn" class="timer-preset">Custom</button>
             </div>
-            <div id="customTimerInput" class="timer-custom hidden">
+            <div id="customTimerInput" class="timer-custom hidden flex gap-2">
               <input type="number" id="customMinutes" min="1" max="180" placeholder="Menit (1-180)" class="timer-input">
-              <div class="timer-actions">
-                <button id="setCustomTimer" class="btn btn-primary">Set</button>
-                <button id="clearTimer" class="btn btn-ghost">Clear</button>
-              </div>
+              <button id="setCustomTimer" class="btn btn-primary">Set</button>
+              <button id="clearTimer" class="btn btn-ghost">Clear</button>
             </div>
-            <span id="timerCountdown" class="timer-countdown hidden">Sisa: 00:00</span>
           </div>
         </div>
         <div id="songList" class="song-list"></div>
@@ -87,7 +87,11 @@
         </div>
       </div>
 
-      <div id="lyrics" class="hidden mt-6 p-6 glass-effect rounded-xl text-white text-base max-h-80 overflow-y-auto"></div>
+      <div id="lyrics" class="hidden mt-6 p-6 glass-effect rounded-xl text-white text-base max-h-80 overflow-y-auto relative">
+        <button id="toggleAutoScroll" class="absolute top-2 right-2 text-sm text-muted hover:text-accent transition-colors" title="Toggle Auto-Scroll">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
 
       <footer class="mt-8 glass-effect rounded-xl p-4 flex justify-center space-x-4">
         <a href="https://instagram.com/yudis_299" target="_blank" class="contact-btn">
@@ -274,9 +278,10 @@
     const customTimerInput = document.getElementById('customTimerInput');
     const customMinutesInput = document.getElementById('customMinutes');
     const setCustomTimer = document.getElementById('setCustomTimer');
-    const customTimerBtn = document.getElementById('customTimerBtn');
     const clearTimer = document.getElementById('clearTimer');
+    const customTimerBtn = document.getElementById('customTimerBtn');
     const timerPresets = document.querySelectorAll('.timer-preset');
+    const toggleAutoScroll = document.getElementById('toggleAutoScroll');
 
     // State
     let currentLyrics = [];
@@ -289,6 +294,7 @@
     let timerId = null;
     let timerEndTime = null;
     let hasScrolled = false;
+    let autoScrollEnabled = false;
 
     function getAlbumFromPath(song) {
       return song.folder || 'unknown';
@@ -368,6 +374,11 @@
       const remainingSeconds = Math.floor(remainingMs / 1000);
       timerCountdown.textContent = `Sisa: ${formatTime(remainingSeconds)}`;
       timerCountdown.classList.remove('hidden');
+      if (remainingSeconds <= 10) {
+        timerCountdown.classList.add('pulse');
+      } else {
+        timerCountdown.classList.remove('pulse');
+      }
     }
 
     function setSleepTimer(minutes) {
@@ -418,15 +429,15 @@
       canvas.height = window.innerHeight;
 
       const particles = [];
-      const particleCount = 10;
+      const particleCount = 15; // Increased for richer effect
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          radius: Math.random() * 1.2 + 0.3,
-          speed: Math.random() * 0.1 + 0.03,
-          opacity: Math.random() * 0.2 + 0.05
+          radius: Math.random() * 1.5 + 0.5,
+          speed: Math.random() * 0.15 + 0.05,
+          opacity: Math.random() * 0.3 + 0.1
         });
       }
 
@@ -488,7 +499,7 @@
           ${albumData.photo ? `
             <div class="mb-2 flex justify-center">
               <img src="${albumData.photo}" alt="${albumData.name}" loading="lazy"
-                   class="w-24 h-24 rounded-lg object-cover border border-accent">
+                   class="w-24 h-24 rounded-lg object-cover border border-accent transition-transform duration-300">
             </div>
           ` : `
             <div class="mb-2 flex justify-center">
@@ -532,7 +543,7 @@
         <div class="flex flex-col items-center space-y-2">
           ${albumPhoto ? `
             <img src="${albumPhoto}" alt="${album}" loading="lazy"
-                 class="w-28 h-28 rounded-lg object-cover border border-accent">
+                 class="w-28 h-28 rounded-lg object-cover border border-accent transition-transform duration-300">
           ` : `
             <div class="w-28 h-28 rounded-lg bg-dark-accent flex items-center justify-center">
               <i class="fas fa-compact-disc text-xl text-accent"></i>
@@ -809,7 +820,7 @@
         if (newLineIndex !== currentLineIndex) {
           currentLineIndex = newLineIndex;
           updateLyricDisplay();
-          if (newLineIndex >= 0) {
+          if (autoScrollEnabled && newLineIndex >= 0) {
             scrollToCurrentLine();
           }
         }
@@ -929,8 +940,8 @@
 
     function scrollToCurrentLine() {
       try {
-        if (hasScrolled) return;
-        const currentLine = document.querySelector(`.lyric-line[data-index="${currentLineIndex}"]`);
+        if (hasScrolled && !autoScrollEnabled) return;
+        const currentLine = document.querySelector(`.lyric-line[data-index="${currentLineIndex}"]`) || document.querySelector('.lyric-line');
         if (currentLine && lyricsContainer) {
           const lineRect = currentLine.getBoundingClientRect();
           const containerRect = lyricsContainer.getBoundingClientRect();
@@ -939,7 +950,7 @@
             top: offset,
             behavior: 'smooth'
           });
-          hasScrolled = true;
+          if (!autoScrollEnabled) hasScrolled = true;
         }
       } catch (error) {
         console.error('Error saat scroll lirik:', error);
@@ -989,6 +1000,8 @@
           currentSongIndex = -1;
           songList.innerHTML = '';
           hasScrolled = false;
+          autoScrollEnabled = false;
+          if (toggleAutoScroll) toggleAutoScroll.classList.remove('active');
 
           if (timerId) {
             clearTimeout(timerId);
@@ -1078,6 +1091,16 @@
         setSleepTimer(0);
         customTimerInput.classList.add('hidden');
         resetTimerPresets();
+      });
+    }
+
+    if (toggleAutoScroll) {
+      toggleAutoScroll.addEventListener('click', () => {
+        autoScrollEnabled = !autoScrollEnabled;
+        toggleAutoScroll.classList.toggle('active', autoScrollEnabled);
+        if (autoScrollEnabled && currentLineIndex >= 0) {
+          scrollToCurrentLine();
+        }
       });
     }
 
