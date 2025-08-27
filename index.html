@@ -641,6 +641,18 @@
             customTimerInput.classList.add('hidden');
             timerCountdown.classList.add('hidden');
           }
+          // Lakukan scroll awal hanya jika belum scroll dan sedang play dari pause
+          if (!hasScrolled && currentLyrics.length > 0) {
+            setTimeout(() => {
+              const initialLineIndex = currentLyrics.findIndex(line => line.time >= audioPlayer.currentTime);
+              if (initialLineIndex >= 0) {
+                currentLineIndex = initialLineIndex;
+                updateLyricDisplay();
+                scrollToCurrentLine();
+                hasScrolled = true;
+              }
+            }, 100);
+          }
         }
         updatePlayPauseButton();
       } catch (error) {
@@ -778,7 +790,7 @@
       audioPlayer.addEventListener('play', handlePlay);
       audioPlayer.addEventListener('loadedmetadata', updateDuration);
 
-      // Lakukan scroll awal saat lagu mulai
+      // Lakukan scroll awal hanya jika belum scroll
       if (!hasScrolled && currentLyrics.length > 0) {
         setTimeout(() => {
           const initialLineIndex = currentLyrics.findIndex(line => line.time >= audioPlayer.currentTime);
@@ -786,9 +798,9 @@
             currentLineIndex = initialLineIndex;
             updateLyricDisplay();
             scrollToCurrentLine();
-            hasScrolled = true; // Tandai bahwa scroll awal telah dilakukan
+            hasScrolled = true;
           }
-        }, 100); // Delay kecil untuk memastikan lirik sudah dimuat
+        }, 100);
       }
     }
 
@@ -807,7 +819,6 @@
         if (newLineIndex !== currentLineIndex) {
           currentLineIndex = newLineIndex;
           updateLyricDisplay();
-          // Tidak memanggil scrollToCurrentLine di sini untuk mencegah scroll berulang
         }
 
         const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
@@ -833,7 +844,7 @@
         currentLineIndex = -1;
         updateLyricDisplay();
         lyricsContainer.scrollTop = 0;
-        hasScrolled = false; // Reset flag untuk lagu berikutnya
+        hasScrolled = false; // Reset untuk lagu berikutnya
         playNextSong();
       } catch (error) {
         console.error('Error saat lagu selesai:', error);
@@ -897,7 +908,7 @@
         document.querySelectorAll('#songList > div.card').forEach(el => {
           el.classList.remove('bg-dark-accent');
         });
-        hasScrolled = false; // Reset flag untuk lagu berikutnya
+        hasScrolled = false; // Reset untuk lagu berikutnya
         return;
       }
       const nextSong = currentPlaylist[nextIndex];
@@ -983,7 +994,7 @@
           currentPlaylist = [];
           currentSongIndex = -1;
           songList.innerHTML = '';
-          hasScrolled = false; // Reset flag saat kembali ke daftar album
+          hasScrolled = false; // Reset saat kembali ke daftar album
 
           if (timerId) {
             clearTimeout(timerId);
@@ -1016,7 +1027,7 @@
           const width = rect.width;
           const percentage = clickX / width;
           audioPlayer.currentTime = percentage * audioPlayer.duration;
-          hasScrolled = false; // Reset flag saat pengguna mengubah waktu secara manual
+          hasScrolled = false; // Reset saat pengguna mengubah waktu
         } catch (error) {
           console.error('Error saat mengatur progress:', error);
         }
