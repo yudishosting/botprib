@@ -293,6 +293,7 @@
     let isSwitchingSong = false;
     let timerId = null;
     let timerEndTime = null;
+    let hasScrolledForSong = false; // New flag to track if scroll has occurred for the current song
 
     function getAlbumFromPath(song) {
       return song.folder || 'tidak diketahui';
@@ -581,6 +582,7 @@
       audioPlayer.pause();
       audioPlayer.src = '';
       audioPlayer.currentTime = 0;
+      hasScrolledForSong = false; // Reset the scroll flag for the new song
 
       try {
         const isValidAudio = await checkAudioFile(song.mp3);
@@ -788,11 +790,12 @@
     function scrollToCurrentLine() {
       try {
         const currentLine = document.querySelector(`.lyric-line[data-index="${currentLineIndex}"]`);
-        if (currentLine && lyricsContainer) {
+        if (currentLine && lyricsContainer && !hasScrolledForSong) {
           currentLine.scrollIntoView({
             behavior: 'smooth',
             block: 'center'
           });
+          hasScrolledForSong = true; // Set the flag to prevent further forced scrolling
         }
       } catch (error) {
         console.error('Kesalahan saat scroll ke baris lirik saat ini:', error);
@@ -842,6 +845,7 @@
         currentLineIndex = -1;
         updateLyricDisplay();
         lyricsContainer.scrollTop = 0;
+        hasScrolledForSong = false; // Reset for the next song
         playNextSong();
       } catch (error) {
         console.error('Kesalahan saat lagu selesai:', error);
@@ -973,6 +977,7 @@
           currentPlaylist = [];
           currentSongIndex = -1;
           songList.innerHTML = '';
+          hasScrolledForSong = false; // Reset scroll flag
 
           if (timerId) {
             clearTimeout(timerId);
