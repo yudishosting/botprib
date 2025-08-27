@@ -28,9 +28,9 @@
       <div id="playlist" class="hidden">
         <div id="playlistHeader" class="mb-4"></div>
         <div id="timerSection" class="timer-section mb-6">
-          <div class="glass-effect rounded-lg p-3 flex items-center gap-2">
-            <i class="fas fa-clock text-accent text-base"></i>
-            <select id="sleepTimer" class="timer-select">
+          <div class="glass-effect rounded-lg p-4 flex items-center gap-3 bg-opacity-80 backdrop-blur-lg shadow-lg transition-all duration-300 hover:shadow-xl">
+            <i class="fas fa-clock text-accent text-lg animate-pulse"></i>
+            <select id="sleepTimer" class="timer-select bg-dark-accent text-white rounded-lg p-2 focus:ring-2 focus:ring-accent focus:outline-none transition-all duration-200">
               <option value="0">Timer Tidur</option>
               <option value="5">5 Menit</option>
               <option value="15">15 Menit</option>
@@ -38,13 +38,16 @@
               <option value="60">1 Jam</option>
               <option value="custom">Custom</option>
             </select>
-            <div id="customTimerInput" class="hidden flex items-center gap-2">
-              <input type="number" id="customMinutes" min="1" max="180" placeholder="Masukkan menit (1-180)" class="timer-input">
-              <button id="setCustomTimer" class="px-3 py-1 bg-accent text-dark rounded-md hover:bg-accent-hover transition-colors duration-200 text-sm font-medium">
-                Set Timer
+            <div id="customTimerInput" class="hidden flex items-center gap-3">
+              <input type="number" id="customMinutes" min="1" max="180" placeholder="Menit (1-180)" class="timer-input bg-dark-accent text-white rounded-lg p-2 w-28 focus:ring-2 focus:ring-accent focus:outline-none">
+              <button id="setCustomTimer" class="px-4 py-2 bg-accent text-dark rounded-lg hover:bg-accent-hover transition-all duration-200 text-sm font-medium">
+                Set
               </button>
             </div>
-            <span id="timerCountdown" class="text-xs text-gray-300 hidden">Sisa: 00:00</span>
+            <button id="clearTimer" class="hidden px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 text-sm font-medium">
+              <i class="fas fa-times mr-1"></i> Hapus
+            </button>
+            <span id="timerCountdown" class="text-sm text-accent font-medium hidden ml-auto animate-pulse">Sisa: 00:00</span>
           </div>
         </div>
         <div id="songList" class="song-list"></div>
@@ -274,6 +277,7 @@
     const customTimerInput = document.getElementById('customTimerInput');
     const customMinutesInput = document.getElementById('customMinutes');
     const setCustomTimer = document.getElementById('setCustomTimer');
+    const clearTimer = document.getElementById('clearTimer');
 
     // State
     let currentLyrics = [];
@@ -353,17 +357,27 @@
       const remainingMs = timerEndTime - now;
       if (remainingMs <= 0) {
         timerCountdown.classList.add('hidden');
+        clearTimer.classList.add('hidden');
         clearTimeout(timerId);
         clearInterval(timerId);
         timerId = null;
         timerEndTime = null;
         sleepTimer.value = "0";
         customTimerInput.classList.add('hidden');
+        audioPlayer.pause();
+        isPlaying = false;
+        updatePlayPauseButton();
+        nowPlaying.innerHTML = `
+          <i class="fas fa-moon mr-2 text-accent"></i>
+          ${currentPlaylist[currentSongIndex]?.artist || 'Artis'} - ${currentPlaylist[currentSongIndex]?.title || 'Judul'}
+          <span class="text-gray-300 text-xs">(${currentSongIndex + 1}/${currentPlaylist.length})</span>
+        `;
         return;
       }
       const remainingSeconds = Math.floor(remainingMs / 1000);
       timerCountdown.textContent = `Sisa: ${formatTime(remainingSeconds)}`;
       timerCountdown.classList.remove('hidden');
+      clearTimer.classList.remove('hidden');
     }
 
     function setSleepTimer(minutes) {
@@ -373,6 +387,7 @@
         timerId = null;
       }
       timerCountdown.classList.add('hidden');
+      clearTimer.classList.add('hidden');
       timerEndTime = null;
 
       if (minutes > 0) {
@@ -388,6 +403,7 @@
             <span class="text-gray-300 text-xs">(${currentSongIndex + 1}/${currentPlaylist.length})</span>
           `;
           timerCountdown.classList.add('hidden');
+          clearTimer.classList.add('hidden');
           clearTimeout(timerId);
           clearInterval(timerId);
           timerId = null;
@@ -397,6 +413,19 @@
         }, milliseconds);
         timerId = setInterval(updateTimerCountdown, 1000);
         updateTimerCountdown();
+      }
+    }
+
+    function clearSleepTimer() {
+      if (timerId) {
+        clearTimeout(timerId);
+        clearInterval(timerId);
+        timerId = null;
+        timerEndTime = null;
+        timerCountdown.classList.add('hidden');
+        clearTimer.classList.add('hidden');
+        sleepTimer.value = "0";
+        customTimerInput.classList.add('hidden');
       }
     }
 
@@ -591,7 +620,7 @@
           el.classList.remove('bg-dark-accent');
         });
 
-        const currentSongElement = document.querySelector(`[data-index="${currentSongIndex}"]`);
+        const currentSongElement = document.querySelector(`[data-song-index="${currentSongIndex}"]`);
         if (currentSongElement) {
           currentSongElement.classList.add('bg-dark-accent');
         }
@@ -610,15 +639,12 @@
 
           loadLyrics(song.lyric);
 
-          // === ⬇️ Tambahan: arahkan scroll ke kolom lirik (sekali saja saat mulai putar lagu) ⬇️
           setTimeout(() => {
             if (lyricsContainer) {
               lyricsContainer.classList.remove('hidden');
               lyricsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
           }, 400);
-          // === ⬆️ Tambahan selesai ⬆️
-
         } else {
           nowPlaying.innerHTML = `
             <i class="fas fa-exclamation-triangle mr-2 text-red-400"></i>
@@ -648,6 +674,7 @@
             sleepTimer.value = "0";
             customTimerInput.classList.add('hidden');
             timerCountdown.classList.add('hidden');
+            clearTimer.classList.add('hidden');
           }
         }
         updatePlayPauseButton();
@@ -985,6 +1012,7 @@
             timerId = null;
             timerEndTime = null;
             timerCountdown.classList.add('hidden');
+            clearTimer.classList.add('hidden');
             sleepTimer.value = "0";
             customTimerInput.classList.add('hidden');
           }
@@ -1032,6 +1060,7 @@
           const value = sleepTimer.value;
           if (value === 'custom') {
             customTimerInput.classList.remove('hidden');
+            clearTimer.classList.add('hidden');
             customMinutesInput.focus();
           } else {
             customTimerInput.classList.add('hidden');
@@ -1057,6 +1086,16 @@
           }
         } catch (error) {
           console.error('Error saat mengatur timer custom:', error);
+        }
+      });
+    }
+
+    if (clearTimer) {
+      clearTimer.addEventListener('click', () => {
+        try {
+          clearSleepTimer();
+        } catch (error) {
+          console.error('Error saat menghapus timer:', error);
         }
       });
     }
