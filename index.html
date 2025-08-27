@@ -944,7 +944,7 @@
           const offset = lineRect.top - containerRect.top + lyricsContainer.scrollTop - (containerRect.height / 2) + (lineRect.height / 2);
           lyricsContainer.scrollTo({
             top: offset,
-            behavior: 'smooth'
+            behavior: 'auto' // Scroll langsung tanpa animasi
           });
         }
       } catch (error) {
