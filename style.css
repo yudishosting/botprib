@@ -514,7 +514,7 @@ header h1 {
         padding: 0.7rem 1.5rem;
         font-size: 1rem;
     }
-
+    
     .secondary-controls-player {
         flex-direction: flex; /* Tumpuk kontrol sekunder di layar kecil */
         gap: 0.8rem;
