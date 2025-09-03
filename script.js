@@ -39,28 +39,182 @@ const currentSpeedDisplay = document.getElementById('currentSpeedDisplay');
 
 // App State
 let songs = [
-    { artist: "Kendis", title: "Ours to Keep", mp3: "music/random/keep.mp3", lyric: "lyrics/random/keep.js", artistPhoto: "/images/random/random.jpg", videoBgSrc: "animasi/naruto.mp4" },
-    { artist: "Taylor Swift", title: "Message in a Bottle", mp3: "music/random/botle.mp3", lyric: "lyrics/random/botle.js", artistPhoto: "/images/random/random.jpg", videoBgSrc: "animasi/naruta.mp4" },
-    { artist: "Matty Healy", title: "About You", mp3: "music/random/aboutyou.mp3", lyric: "lyrics/random/aboutyou.js", artistPhoto: "/images/random/random.jpg", videoBgSrc: "animasi/naruti.mp4" },
-    { artist: "Dougy Mandagi", title: "Sweet Disposition", mp3: "music/random/disposition.mp3", lyric: "lyrics/random/disposition.js", artistPhoto: "/images/random/random.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "One Direction", title: "Where We Are", mp3: "music/random/weare.mp3", lyric: "lyrics/random/weare.js", artistPhoto: "/images/random/random.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Gigi Perez", title: "Sailor Song", mp3: "music/random/sailor.mp3", lyric: "lyrics/random/sailor.js", artistPhoto: "/images/random/random.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Sombr", title: "Back To Friend", mp3: "music/random/friends.mp3", lyric: "lyrics/random/friends.js", artistPhoto: "/images/random/random.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Nadhif Basalamah", title: "Bergema Sampai Selamanya", mp3: "music/randomm/bergema.mp3", lyric: "lyrics/randomm/bergema.js", artistPhoto: "/images/randomm/randomm.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Nadhif Basalamah", title: "Penjaga Hati", mp3: "music/randomm/penjagahati.mp3", lyric: "lyrics/randomm/penjagahati.js", artistPhoto: "/images/randomm/randomm.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Aris Lesmana", title: "Mangu", mp3: "music/randomm/mangu.mp3", lyric: "lyrics/randomm/mangu.js", artistPhoto: "/images/randomm/randomm.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Feby Putri", title: "Kembali Pulang", mp3: "music/randomm/pulang.mp3", lyric: "lyrics/randomm/pulang.js", artistPhoto: "/images/randomm/randomm.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Hindia", title: "Everything U Are", mp3: "music/hindia/everything.mp3", lyric: "lyrics/hindia/everything.js", artistPhoto: "/images/hindia/hindia.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Hindia", title: "Ramai Sepi Bersama", mp3: "music/hindia/bersama.mp3", lyric: "lyrics/hindia/bersama.js", artistPhoto: "/images/hindia/hindia.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Hindia", title: "Semua Lagu Cinta Terdengar Sama", mp3: "music/hindia/sama.mp3", lyric: "lyrics/hindia/sama.js", artistPhoto: "/images/hindia/hindia.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Hindia", title: "Rumah ke Rumah", mp3: "music/hindia/rumah.mp3", lyric: "lyrics/hindia/rumah.js", artistPhoto: "/images/hindia/hindia.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Hindia", title: "Evaluasi", mp3: "music/hindia/evaluasi.mp3", lyric: "lyrics/hindia/evaluasi.js", artistPhoto: "/images/hindia/hindia.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Hindia", title: "Cincin", mp3: "music/hindia/cincin.mp3", lyric: "lyrics/hindia/cincin.js", artistPhoto: "/images/hindia/hindia.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Hindia", title: "Kita Kesana", mp3: "music/hindia/kitakesana.mp3", lyric: "lyrics/hindia/kitakesana.js", artistPhoto: "/images/hindia/hindia.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Hindia", title: "Rasakan Nikmatnya Hidup", mp3: "music/hindia/nikmatnya.mp3", lyric: "lyrics/hindia/nikmatnya.js", artistPhoto: "/images/hindia/hindia.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Feast", title: "Feast", mp3: "music/nina/feast.mp3", lyric: "lyrics/nina/feast.js", artistPhoto: "/images/nina/nina.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Feast", title: "Tarot", mp3: "music/nina/tarot.mp3", lyric: "lyrics/nina/tarot.js", artistPhoto: "/images/nina/nina.jpg", videoBgSrc: "animasi/anime.mp4" },
-    { artist: "Feast", title: "o,Tuan", mp3: "music/nina/otuan.mp3", lyric: "lyrics/nina/otuan.js", artistPhoto: "/images/nina/nina.jpg", videoBgSrc: "animasi/anime.mp4" }
+    {
+        artist: "Kendis",
+        title: "ours to keep",
+        mp3: "music/random/keep.mp3",
+        lyric: "lyrics/random/keep.js",
+        artistPhoto: "/images/random/keep.jpeg",
+        videoBgSrc: "animasi/naruto.mp4"
+      },
+      {
+        artist: "Taylor Swift",
+        title: "Message in a bottle",
+        mp3: "music/random/botle.mp3",
+        lyric: "lyrics/random/botle.js",
+        artistPhoto: "/images/random/botle.jpg",
+        videoBgSrc: "animasi/naruta.mp4"
+      },
+      {
+        artist: "Matty Healy",
+        title: "About You",
+        mp3: "music/random/aboutyou.mp3",
+        lyric: "lyrics/random/aboutyou.js",
+        artistPhoto: "/images/random/about.jpg",
+        videoBgSrc: "animasi/naruti.mp4"
+      },
+      {
+        artist: "Dougy Mandagi",
+        title: "Sweet disposition",
+        mp3: "music/random/disposition.mp3",
+        lyric: "lyrics/random/disposition.js",
+        artistPhoto: "/images/random/sweet.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "One direction",
+        title: "where we are",
+        mp3: "music/random/weare.mp3",
+        lyric: "lyrics/random/weare.js",
+        artistPhoto: "/images/random/weare.jpeg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Gigi Perez",
+        title: "Sailor Song",
+        mp3: "music/random/sailor.mp3",
+        lyric: "lyrics/random/sailor.js",
+        artistPhoto: "/images/random/sailor.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Sombr",
+        title: "Back To Friend",
+        mp3: "music/random/friends.mp3",
+        lyric: "lyrics/random/friends.js",
+        artistPhoto: "/images/random/friends.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Nadhif Basalamah",
+        title: "Bergema Sampai Selamanya",
+        mp3: "music/randomm/bergema.mp3",
+        lyric: "lyrics/randomm/bergema.js",
+        artistPhoto: "/images/random/bergema.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Nadhif Basalamah",
+        title: "Penjaga Hati",
+        mp3: "music/randomm/penjagahati.mp3",
+        lyric: "lyrics/randomm/penjagahati.js",
+        artistPhoto: "/images/random/penjagahati.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Aris Lesmana",
+        title: "Mangu",
+        mp3: "music/randomm/mangu.mp3",
+        lyric: "lyrics/randomm/mangu.js",
+        artistPhoto: "/images/random/mangu.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Feby Putri",
+        title: "Kembali Pulang",
+        mp3: "music/randomm/pulang.mp3",
+        lyric: "lyrics/randomm/pulang.js",
+        artistPhoto: "/images/random/pulang.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Hindia",
+        title: "Everything U Are",
+        mp3: "music/hindia/everything.mp3",
+        lyric: "lyrics/hindia/everything.js",
+        artistPhoto: "/images/hindia/everything.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Hindia",
+        title: "Ramai Sepi Bersama",
+        mp3: "music/hindia/bersama.mp3",
+        lyric: "lyrics/hindia/bersama.js",
+        artistPhoto: "/images/hindia/bersama.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Hindia",
+        title: "Semua Lagu Cinta Terdengar Sama",
+        mp3: "music/hindia/sama.mp3",
+        lyric: "lyrics/hindia/sama.js",
+        artistPhoto: "/images/hindia/sama.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Hindia",
+        title: "Rumah ke rumah",
+        mp3: "music/hindia/rumah.mp3",
+        lyric: "lyrics/hindia/rumah.js",
+        artistPhoto: "/images/hindia/rumah.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Hindia",
+        title: "Evaluasi",
+        mp3: "music/hindia/evaluasi.mp3",
+        lyric: "lyrics/hindia/evaluasi.js",
+        artistPhoto: "/images/hindia/evaluasi.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Hindia",
+        title: "Cincin",
+        mp3: "music/hindia/cincin.mp3",
+        lyric: "lyrics/hindia/cincin.js",
+        artistPhoto: "/images/hindia/cincin.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Hindia",
+        title: "Kita Kesana",
+        mp3: "music/hindia/kitakesana.mp3",
+        lyric: "lyrics/hindia/kitakesana.js",
+        artistPhoto: "/images/hindia/kitakesana.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Hindia",
+        title: "Rasakan Nikmatnya Hidup",
+        mp3: "music/hindia/nikmatnya.mp3",
+        lyric: "lyrics/hindia/nikmatnya.js",
+        artistPhoto: "/images/hindia/nikmatnya.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Feast",
+        title: "Feast",
+        mp3: "music/nina/feast.mp3",
+        lyric: "lyrics/nina/feast.js",
+        artistPhoto: "/images/nina/feast.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Feast",
+        title: "Tarot",
+        mp3: "music/nina/tarot.mp3",
+        lyric: "lyrics/nina/tarot.js",
+        artistPhoto: "/images/nina/tarot.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      },
+      {
+        artist: "Feast",
+        title: "o,Tuan",
+        mp3: "music/nina/otuan.mp3",
+        lyric: "lyrics/nina/otuan.js",
+        artistPhoto: "/images/nina/otuan.jpg",
+        videoBgSrc: "animasi/anime.mp4"
+      }
 ];
 
 let currentSongIndex = 0;
